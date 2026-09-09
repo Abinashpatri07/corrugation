@@ -58,7 +58,7 @@ function App() {
           
           <Route path="customers" element={<CustomerPage />} />
           <Route path="customers/new" element={<CreateCustomerPage />} />
-          <Route path="customers/:id" element={<CustomerDetailsPage />} />
+          <Route path="customers/:customerId" element={<CustomerDetailsPage />} />
           
           {/* Other routes from sidebar */}
           <Route path="sales" element={<Navigate to="/sales/quotes" replace />} />
