@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, HelpCircle, Bell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Calendar, CalendarDays, HelpCircle, Bell } from 'lucide-react';
 import { formatDate, formatTime } from '../../utils/helpers';
 
 const Header = ({ searchQuery, setSearchQuery }) => {
+  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -24,7 +26,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         gap: '20px',
       }}
     >
-      {/* Left Side (Search & Date/Time) */}
+      {/* Left Side (Search) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '32px', flex: 1 }}>
         
         {/* Search Bar */}
@@ -88,11 +90,35 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Right Side */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <svg width="0" height="0" style={{ position: 'absolute' }}>
+          <linearGradient id="calendarGradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#ff3344" offset="0%" />
+            <stop stopColor="#a044b7" offset="100%" />
+          </linearGradient>
+        </svg>
+
+        {/* Calendar Icon */}
+        <button
+          onClick={() => navigate('/calendar')}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '4px',
+            borderRadius: '6px',
+            transition: 'opacity 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        >
+          <CalendarDays style={{ width: '24px', height: '24px' }} color="url(#calendarGradient)" strokeWidth={2.2} />
+        </button>
 
         {/* Help Icon */}
         <button
@@ -145,8 +171,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           />
         </button>
 
-        {/* Divider */}
-        <div style={{ width: '1px', height: '24px', background: '#e8ecef' }} />
+        {/* Divider
+        <div style={{ width: '1px', height: '24px', background: '#e8ecef' }} /> */}
 
         {/* User Profile */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>

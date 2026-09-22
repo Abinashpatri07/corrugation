@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Plus,
@@ -22,41 +22,65 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 
-const mockQuotes = [
-  {
-    id: 1,
-    date: '25/06/2026',
-    quoteNo: 'QT-00001',
-    customerName: 'CLIMAMAX PVT LTD',
-    boxSpec: '5-Ply',
-    quantity: '2,500',
-    amount: '53,900.00',
-  },
-  {
-    id: 2,
-    date: '20/06/2026',
-    quoteNo: 'QT-00002',
-    customerName: 'NEXUS TECHNOLOGIES',
-    boxSpec: '3-Ply',
-    quantity: '1,000',
-    amount: '12,500.00',
-  },
-  {
-    id: 3,
-    date: '15/06/2026',
-    quoteNo: 'QT-00003',
-    customerName: 'APEX INDUSTRIES',
-    boxSpec: '5-Ply',
-    quantity: '3,200',
-    amount: '68,400.00',
-  }
-];
 
 const QuoteDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [allQuotes, setAllQuotes] = useState([]);
+  const [activeQuote, setActiveQuote] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const activeQuote = mockQuotes.find(q => q.id.toString() === id) || mockQuotes[0];
+  const handleConvertToSO = async () => {
+    if (!activeQuote || !activeQuote.id) return;
+    try {
+      const res = await fetch(`http://localhost:3000/api/v1/sales-orders/convert-quote/${activeQuote.id}`, {
+        method: 'POST'
+      });
+      if (!res.ok) throw new Error('Failed to convert to SO');
+      const result = await res.json();
+      alert('Sales Order Created!');
+      navigate(`/sales/order/${result.data.salesOrderId}`);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch all quotes for sidebar
+        const listRes = await fetch('http://localhost:3000/api/v1/quotes');
+        const listData = await listRes.json();
+        if (listData.success) {
+          setAllQuotes(listData.data);
+        }
+
+        // Fetch specific quote details
+        const currentId = id === 'new' ? (listData.data[0]?.id || 1) : id;
+        if (currentId) {
+          const detailRes = await fetch(`http://localhost:3000/api/v1/quotes/${currentId}`);
+          const detailData = await detailRes.json();
+          if (detailData.success) {
+            setActiveQuote(detailData.data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch quote data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500 font-medium">Loading quote details...</div>;
+  }
+
+  if (!activeQuote) {
+    return <div className="p-8 text-center text-gray-500 font-medium">Quote not found.</div>;
+  }
 
   const tabs = [
     { name: 'Quotes', path: '/sales/quotes' },
@@ -169,11 +193,11 @@ const QuoteDetailPage = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
-              {mockQuotes.map((quote) => {
+              {allQuotes.map((quote, index) => {
                 const isActive = id === quote.id.toString() || (!id && quote.id === 1);
                 return (
                   <div 
-                    key={quote.id}
+                    key={`${quote.id}-${index}`}
                     onClick={() => navigate(`/sales/quotes/${quote.id}`)}
                     className={`rounded-2xl px-3 py-2 cursor-pointer transition-all shadow-sm mb-2.5 ${
                       isActive 
@@ -219,7 +243,10 @@ const QuoteDetailPage = () => {
                 <button className="w-8 h-8 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full flex items-center justify-center text-gray-600 transition-colors shadow-sm">
                   <Printer className="w-3.5 h-3.5" />
                 </button>
-                <button className="flex items-center px-4 py-1.5 bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] hover:opacity-90 text-white rounded-full text-xs font-bold transition-opacity shadow-sm">
+                <button 
+                  onClick={handleConvertToSO}
+                  className="flex items-center px-4 py-1.5 bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] hover:opacity-90 text-white rounded-full text-xs font-bold transition-opacity shadow-sm"
+                >
                   <ArrowRightLeft className="w-3 h-3 mr-1.5" />
                   Convert to SO
                 </button>
@@ -252,11 +279,11 @@ const QuoteDetailPage = () => {
                       <div className="space-y-1.5">
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-32">GSTIN</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">29BGBBB2222B2Z2</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeQuote.gstin || "N/A"}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-32">Point Of Contact</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">Sarah Jenkins</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeQuote.poc || "N/A"}</span>
                         </div>
                       </div>
                     </div>
@@ -271,15 +298,15 @@ const QuoteDetailPage = () => {
                       <div className="space-y-1.5">
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Quote Number</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">QT-00002</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeQuote.quoteNo}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Quote Date</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">26/06/2026</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeQuote.date}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Expected Shipment</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">10/07/2026</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeQuote.expectedShipment || "N/A"}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Payment Terms</span>
@@ -287,7 +314,7 @@ const QuoteDetailPage = () => {
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Salesperson</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">Ramesh Kumar</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeQuote.salesperson || "Manoj Kumar"}</span>
                         </div>
                       </div>
                     </div>
@@ -299,10 +326,7 @@ const QuoteDetailPage = () => {
                   <div className="flex-1 p-6">
                     <h5 className="text-[15px] font-semibold text-gray-500 mb-4">Billing Address</h5>
                     <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
-                      Century Pulp & Paper Mill<br />
-                      Gate No. 2, Administrative Office Lalkuan<br />
-                      Industrial Area<br />
-                      Lalkuan Nainital District Uttarakhand 43552
+                      {activeQuote.billingAddress || "N/A"}
                     </p>
                   </div>
 
@@ -312,10 +336,7 @@ const QuoteDetailPage = () => {
                   <div className="flex-1 p-6">
                     <h5 className="text-[15px] font-semibold text-gray-500 mb-4">Shipping Address</h5>
                     <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
-                      Century Pulp & Paper Mill<br />
-                      Century House, Lalkuan Industrial Complex<br />
-                      NH-109, Lalkuan Nainital District<br />
-                      Uttarakhand 262402
+                      {activeQuote.shippingAddress || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -323,26 +344,22 @@ const QuoteDetailPage = () => {
                 {/* Product Specification Box */}
                 <div className="bg-white rounded-xl shadow-sm border border-[#eef2f6] p-4">
                   <h3 className="text-[15px] font-bold text-[#1a233a] pb-3 border-b border-gray-100 mb-3">Product Specification</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <p className="text-xs text-gray-500 mb-1">Paper Type</p>
-                      <p className="text-[13px] font-semibold text-[#1a233a]">Kraft</p>
+                      <p className="text-xs text-gray-500 mb-1">Box Type</p>
+                      <p className="text-[13px] font-semibold text-[#1a233a]">{activeQuote.boxType || "N/A"}</p>
                     </div>
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <p className="text-xs text-gray-500 mb-1">Size</p>
-                      <p className="text-[13px] font-semibold text-[#1a233a]">18×12×10 In</p>
+                      <p className="text-xs text-gray-500 mb-1">Paper</p>
+                      <p className="text-[13px] font-semibold text-[#1a233a]">{activeQuote.paperType || "N/A"}</p>
                     </div>
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <p className="text-xs text-gray-500 mb-1">Ply</p>
-                      <p className="text-[13px] font-semibold text-[#1a233a]">5 Ply</p>
+                      <p className="text-xs text-gray-500 mb-1">Box Size</p>
+                      <p className="text-[13px] font-semibold text-[#1a233a]">{activeQuote.boxSize || "N/A"}</p>
                     </div>
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <p className="text-xs text-gray-500 mb-1">BF</p>
-                      <p className="text-[13px] font-semibold text-[#1a233a]">18 BF</p>
-                    </div>
-                    <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <p className="text-xs text-gray-500 mb-1">Print</p>
-                      <p className="text-[13px] font-semibold text-[#1a233a]">2 Color Flexo</p>
+                      <p className="text-xs text-gray-500 mb-1">Ply Type</p>
+                      <p className="text-[13px] font-semibold text-[#1a233a]">{activeQuote.plyType ? `${activeQuote.plyType} Ply` : "N/A"}</p>
                     </div>
                   </div>
                 </div>
@@ -361,12 +378,12 @@ const QuoteDetailPage = () => {
 
                     <div className="grid grid-cols-12 text-[12px] items-center text-[#1a233a] py-3 border-b border-gray-100">
                       <div className="col-span-6">
-                        <p className="font-bold mb-0.5">5-Ply Corrugated Box</p>
-                        <p className="text-[10px] text-gray-500">Kraft, 18×12×10 In, 18 BF</p>
+                        <p className="font-bold mb-0.5">{activeQuote.plyType}-Ply Corrugated Box</p>
+                        <p className="text-[10px] text-gray-500">Kraft, {activeQuote.boxLength}x{activeQuote.boxWidth}x{activeQuote.boxHeight}, 18 BF</p>
                       </div>
-                      <div className="col-span-2 font-bold">1,000 Box</div>
+                      <div className="col-span-2 font-bold">{activeQuote.quantity} Box</div>
                       <div className="col-span-2 font-bold">30.00</div>
-                      <div className="col-span-2 text-right font-bold">50,645</div>
+                      <div className="col-span-2 text-right font-bold">{activeQuote.subTotal}</div>
                     </div>
                   </div>
 
@@ -374,19 +391,15 @@ const QuoteDetailPage = () => {
                     <div className="w-[300px]">
                       <div className="flex justify-between py-2.5">
                         <span className="text-[13px] font-bold text-[#1a233a]">Sub Total</span>
-                        <span className="text-[13px] font-bold text-[#1a233a]">50,645</span>
+                        <span className="text-[13px] font-bold text-[#1a233a]">{activeQuote.subTotal}</span>
                       </div>
                       <div className="flex justify-between py-2.5">
                         <span className="text-[13px] text-gray-500">GST :</span>
-                        <span className="text-[13px] text-gray-500">600.96</span>
-                      </div>
-                      <div className="flex justify-between py-2.5">
-                        <span className="text-[13px] text-gray-500">Discount Rate</span>
-                        <span className="text-[13px] text-gray-500">400.97</span>
+                        <span className="text-[13px] text-gray-500">{activeQuote.gst}</span>
                       </div>
                       <div className="flex justify-between py-4 mt-2">
                         <span className="text-[15px] font-medium text-rose-400">Total Payable</span>
-                        <span className="text-[15px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">₹53,900.00</span>
+                        <span className="text-[15px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">{activeQuote.amount}</span>
                       </div>
                     </div>
                   </div>

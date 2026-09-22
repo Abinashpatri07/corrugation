@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Check,
   Plus,
@@ -24,6 +24,45 @@ import {
 
 const SalesOrderDetailPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const [allSalesOrders, setAllSalesOrders] = useState([]);
+  const [activeOrder, setActiveOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const listRes = await fetch('http://localhost:3000/api/v1/sales-orders');
+        const listData = await listRes.json();
+        setAllSalesOrders(listData);
+
+        if (id) {
+          const detailRes = await fetch(`http://localhost:3000/api/v1/sales-orders/${id}`);
+          if (detailRes.ok) {
+            const detailData = await detailRes.json();
+            setActiveOrder(detailData);
+          }
+        } else if (listData.length > 0) {
+          navigate(`/sales/order/${listData[0].id}`, { replace: true });
+        }
+      } catch (err) {
+        console.error('Failed to fetch sales orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, navigate]);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500 font-medium">Loading sales order details...</div>;
+  }
+
+  if (!activeOrder) {
+    return <div className="p-8 text-center text-gray-500 font-medium">Sales Order not found.</div>;
+  }
+
   const tabs = [
     { name: 'Quotes', path: '/sales/quotes' },
     { name: 'Sales Orders', path: '/sales/orders' },
@@ -159,47 +198,31 @@ const SalesOrderDetailPage = () => {
 
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
-              {/* Active Card */}
-              <div className="bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md transition-all shadow-sm border border-transparent mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">SO-00001</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">25/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  CLIMAMAX PVT LTD
-                </h3>
-                <div className="text-right">
-                  <span className="text-[14px] font-bold text-[#111827]">₹53,900.00</span>
-                </div>
-              </div>
-
-              {/* Inactive Card 1 */}
-              <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">SO-00002</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">20/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  NEXUS TECHNOLOGIES
-                </h3>
-                <div className="text-right">
-                  <span className="text-[14px] font-bold text-[#111827]">₹12,500.00</span>
-                </div>
-              </div>
-
-              {/* Inactive Card 2 */}
-              <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">SO-00003</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">15/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  APEX INDUSTRIES
-                </h3>
-                <div className="text-right">
-                  <span className="text-[14px] font-bold text-[#111827]">₹0.00</span>
-                </div>
-              </div>
+              {allSalesOrders.map((order) => {
+                const isActive = id === order.id.toString() || (!id && order.id === 1);
+                return (
+                  <div 
+                    key={order.id}
+                    onClick={() => navigate(`/sales/order/${order.id}`)}
+                    className={`rounded-2xl px-3 py-2 cursor-pointer transition-all shadow-sm mb-2.5 ${
+                      isActive 
+                        ? 'bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] border border-transparent hover:shadow-md' 
+                        : 'bg-white hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent border border-gray-100'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-0.5">
+                      <span className="text-[12px] font-medium text-[#374151]">{order.salesOrderNo}</span>
+                      <span className="text-[9px] text-gray-400 font-medium tracking-wide">{order.date}</span>
+                    </div>
+                    <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+                      {order.customerName}
+                    </h3>
+                    <div className="text-right">
+                      <span className="text-[14px] font-bold text-[#111827]">₹{order.payment}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -210,7 +233,7 @@ const SalesOrderDetailPage = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
-                  SO-00001
+                  {activeOrder.salesOrderNo}
                 </h2>
                 <span className="bg-[#ffecd6] text-[#ff7a59] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   Unpaid
@@ -250,21 +273,20 @@ const SalesOrderDetailPage = () => {
                     <div className="p-4 flex-1">
                       <div className="flex items-center mb-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white flex items-center justify-center text-sm font-bold shadow-sm mr-3 flex-shrink-0">
-                          CC
+                          {activeOrder.customerName.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <h4 className="text-[13px] font-bold text-gray-900">Climamax Controls Pvt Ltd</h4>
-                          <div className="text-[11px] text-gray-400 font-medium">CUST-00042</div>
+                          <h4 className="text-[13px] font-bold text-gray-900">{activeOrder.customerName}</h4>
                         </div>
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-32">GSTIN</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">29BGBBB2222B2Z2</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeOrder.gstin || "N/A"}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-32">Point Of Contact</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">Sarah Jenkins</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeOrder.poc || "N/A"}</span>
                         </div>
                       </div>
                     </div>
@@ -279,23 +301,23 @@ const SalesOrderDetailPage = () => {
                       <div className="space-y-1.5">
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Reference</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">QT-000001</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeOrder.quoteNo || "N/A"}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Order Date</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">25/06/2026</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeOrder.date}</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Expected Shipment</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">10/07/2026</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">N/A</span>
                         </div>
                         <div className="flex items-start">
                           <span className="text-[12px] font-medium text-gray-400 w-36">Payment Terms</span>
                           <span className="text-[12px] font-bold text-gray-900 flex-1">Due On Receipt</span>
                         </div>
                         <div className="flex items-start">
-                          <span className="text-[12px] font-medium text-gray-400 w-36">Salesperson</span>
-                          <span className="text-[12px] font-bold text-gray-900 flex-1">Ramesh Kumar</span>
+                          <span className="text-[12px] font-medium text-gray-400 w-36">PO Number</span>
+                          <span className="text-[12px] font-bold text-gray-900 flex-1">{activeOrder.poNo || "N/A"}</span>
                         </div>
                       </div>
                     </div>
@@ -309,17 +331,14 @@ const SalesOrderDetailPage = () => {
                     <div className="flex-1 px-4 py-3">
                       <h3 className="text-[14px] font-bold text-gray-500 mb-2">Billing Address</h3>
                       <div className="text-[12px] text-gray-900 font-medium leading-relaxed">
-                        648/A, OM Chambers, Binnamangala 1st<br />
-                        Stage, Bengaluru, Karnataka 560038
+                        {activeOrder.billingAddress || 'No Billing Address'}
                       </div>
                     </div>
                     <div className="hidden md:block w-px bg-gray-100 my-3"></div>
                     <div className="flex-1 px-4 py-3">
                       <h3 className="text-[14px] font-bold text-gray-500 mb-2">Shipping Address</h3>
                       <div className="text-[12px] text-gray-900 font-medium leading-relaxed">
-                        Warehouse No. 12,<br />
-                        KIADB Industrial Area, Whitefield,<br />
-                        Bengaluru, Karnataka 560066
+                        {activeOrder.shippingAddress || 'No Shipping Address'}
                       </div>
                     </div>
                   </div>
@@ -330,26 +349,22 @@ const SalesOrderDetailPage = () => {
                   <div className="px-4 py-3 border-b border-gray-50">
                     <h3 className="text-[14px] font-bold text-gray-900">Product Specification</h3>
                   </div>
-                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <div className="text-[11px] text-gray-500 font-medium mb-1">Paper Type</div>
-                      <div className="text-[13px] font-bold text-gray-900">Kraft</div>
+                      <div className="text-[11px] text-gray-500 font-medium mb-1">Box Type</div>
+                      <div className="text-[13px] font-bold text-gray-900">{activeOrder.boxType || "N/A"}</div>
                     </div>
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <div className="text-[11px] text-gray-500 font-medium mb-1">Size</div>
-                      <div className="text-[13px] font-bold text-gray-900">18×12×10 In</div>
+                      <div className="text-[11px] text-gray-500 font-medium mb-1">Paper</div>
+                      <div className="text-[13px] font-bold text-gray-900">{activeOrder.paperType || "N/A"}</div>
                     </div>
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <div className="text-[11px] text-gray-500 font-medium mb-1">Ply</div>
-                      <div className="text-[13px] font-bold text-gray-900">5 Ply</div>
+                      <div className="text-[11px] text-gray-500 font-medium mb-1">Box Size</div>
+                      <div className="text-[13px] font-bold text-gray-900">{activeOrder.boxSize || "N/A"}</div>
                     </div>
                     <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <div className="text-[11px] text-gray-500 font-medium mb-1">BF</div>
-                      <div className="text-[13px] font-bold text-gray-900">18 BF</div>
-                    </div>
-                    <div className="bg-[#f8f9fc] p-3 rounded-2xl">
-                      <div className="text-[11px] text-gray-500 font-medium mb-1">Print</div>
-                      <div className="text-[13px] font-bold text-gray-900">2 Color Flexo</div>
+                      <div className="text-[11px] text-gray-500 font-medium mb-1">Ply Type</div>
+                      <div className="text-[13px] font-bold text-gray-900">{activeOrder.plyType || "N/A"}</div>
                     </div>
                   </div>
                 </div>
@@ -375,9 +390,9 @@ const SalesOrderDetailPage = () => {
                             <div className="text-[13px] font-bold text-gray-900">5-Ply Corrugated Box</div>
                             <div className="text-[11px] text-gray-400 font-medium mt-0.5">Kraft, 18×12×10 In, 18 BF</div>
                           </td>
-                          <td className="py-4 px-5 text-[13px] font-bold text-gray-900 text-center">1,000 Box</td>
-                          <td className="py-4 px-5 text-[13px] font-bold text-gray-900 text-right">30.00</td>
-                          <td className="py-4 px-5 text-[13px] font-bold text-gray-900 text-right">50,645</td>
+                          <td className="py-4 px-5 text-[13px] font-bold text-gray-900 text-center">{activeOrder.quantity || 0}</td>
+                          <td className="py-4 px-5 text-[13px] font-bold text-gray-900 text-right">50.00</td>
+                          <td className="py-4 px-5 text-[13px] font-bold text-gray-900 text-right">{activeOrder.itemAmount || '0.00'}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -388,20 +403,16 @@ const SalesOrderDetailPage = () => {
                     <div className="w-72">
                       <div className="flex justify-between items-center py-1.5">
                         <span className="text-[12px] font-bold text-gray-900">Sub Total</span>
-                        <span className="text-[13px] font-bold text-gray-900">50,645</span>
+                        <span className="text-[13px] font-bold text-gray-900">{activeOrder.subTotal || '0.00'}</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5">
                         <span className="text-[11px] text-gray-500 font-medium">GST :</span>
-                        <span className="text-[11px] text-gray-500 font-medium">600.96</span>
-                      </div>
-                      <div className="flex justify-between items-center py-1.5 mb-2">
-                        <span className="text-[11px] text-gray-500 font-medium">Discount Rate</span>
-                        <span className="text-[11px] text-gray-500 font-medium">400.97</span>
+                        <span className="text-[11px] text-gray-500 font-medium">{activeOrder.gst || '0.00'}</span>
                       </div>
 
                       <div className="flex justify-between items-center py-3 border-t border-dashed border-gray-200">
                         <span className="text-[13px] font-bold text-[#ff7a59]">Total Payable</span>
-                        <span className="text-[16px] font-bold bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">₹53,900.00</span>
+                        <span className="text-[16px] font-bold bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">₹{activeOrder.amount || '0.00'}</span>
                       </div>
                     </div>
                   </div>

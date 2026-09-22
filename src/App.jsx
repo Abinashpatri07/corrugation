@@ -29,6 +29,7 @@ import CreateProcurementPage from './pages/purchase/CreateProcurementPage';
 import ProductionPage from './pages/production/ProductionPage';
 import CreateManufacturingPage from './pages/production/CreateManufacturingPage';
 import ManufacturingOrderDetailsPage from './pages/production/ManufacturingOrderDetailsPage';
+import ManufacturingCalendarPage from './pages/ManufacturingCalendar/ManufacturingCalendarPage';
 import CreateMachinePage from './pages/machine/CreateMachinePage';
 import MachineDetailsPage from './pages/machine/MachineDetailsPage';
 import MachinePage from './pages/machine/MachinePage';
@@ -60,6 +61,8 @@ function App() {
           <Route path="customers/new" element={<CreateCustomerPage />} />
           <Route path="customers/:customerId" element={<CustomerDetailsPage />} />
           
+          <Route path="calendar" element={<ManufacturingCalendarPage />} />
+
           {/* Other routes from sidebar */}
           <Route path="sales" element={<Navigate to="/sales/quotes" replace />} />
           <Route path="sales/orders" element={<SalesPage />} />

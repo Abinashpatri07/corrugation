@@ -1,312 +1,591 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronDown, Search, Plus, MoreHorizontal, Edit, Send, Printer, Repeat, MoreVertical, Bookmark } from 'lucide-react';
+import { ChevronDown, Plus, MoreHorizontal, Cpu, Play, Pause, CheckSquare, Clock, User, Check, Droplets, Gauge, X, Layers, Ruler, FlaskConical, Droplet } from 'lucide-react';
+
+const tabs = ['Manufacturing Order', 'Job Cards'];
+
+const MachineIcon = ({ className }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <line x1="5" y1="6" x2="19" y2="6" />
+    <path d="M7 6l2.5 4h5L17 6" />
+    <rect x="10.5" y="10" width="3" height="2" />
+    <rect x="3" y="12" width="18" height="5" rx="2" />
+    <line x1="7" y1="14.5" x2="8" y2="14.5" />
+    <line x1="11.5" y1="14.5" x2="12.5" y2="14.5" />
+    <line x1="16" y1="14.5" x2="17" y2="14.5" />
+    <path d="M5 17l1 3h12l1-3" />
+  </svg>
+);
 
 const CorrugatorJobDetailsPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [activeSubTab, setActiveSubTab] = useState('Job Cards');
+  const [activeTab, setActiveTab] = useState('Job Cards');
+  const [isChecklistModalOpen, setIsChecklistModalOpen] = useState(false);
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f4f7f9]">
+    <main className="flex-1 overflow-y-auto bg-[#f4f7f9] flex flex-col relative p-1.5 gap-1.5">
       
-      {/* ── Master-Detail Layout ── */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Sub Navigation */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm shrink-0 px-6">
+        <nav className="flex space-x-1">
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
+                if (tab === 'Manufacturing Order') navigate('/production', { state: { tab: 'Manufacturing Order' } });
+              }}
+              className={`flex items-center gap-1 px-4 py-2 text-[13px] border-b-2 transition-colors whitespace-nowrap
+                ${activeTab === tab
+                  ? 'border-black text-black font-bold'
+                  : 'border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300'
+                }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Header */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm shrink-0 px-6 py-2.5 flex items-center justify-between">
+        <div className="flex items-center space-x-1 cursor-pointer" onClick={() => navigate('/production')}>
+          <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
+            All Job Cards
+          </h2>
+          <ChevronDown className="w-4 h-4 text-[#8b5cf6]" />
+        </div>
+        <div className="flex items-center space-x-3">
+          <button className="bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] hover:opacity-90 text-white px-3 py-1.5 rounded-full text-[12px] font-bold flex items-center transition-opacity shadow-sm">
+            <Plus className="w-3 h-3 mr-1" strokeWidth={2.5} />
+            New
+          </button>
+          <button className="w-7 h-7 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center transition-colors">
+            <MoreHorizontal className="w-4 h-4" strokeWidth={2} />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto px-1 pb-10 mt-2">
         
-        {/* Left Sidebar (Master List) */}
-        <div className="w-[320px] bg-white border-r border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-[18px] font-bold text-[#1a233a]">All Job Cards</h2>
-            <div className="flex items-center gap-2">
-              <button className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                <Plus className="w-4 h-4" />
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200">
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-4 border-b border-gray-100">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search customer, product or item..."
-                className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+        {/* --- Single Page Document Wrapper --- */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5 mb-6">
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {/* Selected Card */}
-            <div className="border border-blue-200 bg-white rounded-xl p-4 shadow-sm relative cursor-pointer ring-1 ring-blue-500">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-[12px] font-bold text-blue-600">JC-CORR-9042</span>
+          {/* Status Card */}
+          <div className="border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+            {/* Left Info */}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff7a59] via-[#d54a88] to-[#402de8] flex items-center justify-center shadow-md">
+                <MachineIcon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-[13px] font-bold text-[#1a233a] mb-1">Veena Foods Pvt Ltd</h3>
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h2 className="text-[18px] font-bold text-[#1a233a]">Corrugator Line 1</h2>
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#dcfce7] text-[#16a34a] text-[12px] font-medium border border-[#bbf7d0]">
+                    <span className="w-1 h-1 rounded-full bg-[#16a34a]"></span>
+                    Progress
+                  </span>
+                </div>
+                <p className="text-[13px] text-gray-500 mb-0.5">MC-001 <span className="mx-1">•</span> Bay 1, Plant A</p>
+                <p className="text-[13px] text-gray-500">Job Card : JC-38621</p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Right Area (Detail View) */}
-        <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
-          
-          {/* Action Header */}
-          <div className="px-8 py-4 border-b border-gray-200 flex items-center justify-between bg-white z-10 sticky top-0">
-            <h1 className="text-[20px] font-bold text-[#1a233a]">Job Cards</h1>
-            <div className="flex items-center gap-3">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100">
-                <Edit className="w-4 h-4" /> Edit
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100">
-                <Send className="w-4 h-4" /> Send <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100">
-                <Printer className="w-4 h-4" /> PDF/ Print
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                <Repeat className="w-4 h-4" /> Convert to Job Card
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center bg-gray-50 border border-gray-200 text-gray-600 rounded-md hover:bg-gray-100">
-                <MoreVertical className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Form Content Scrollable */}
-          <div className="flex-1 overflow-y-auto p-8 relative">
-            <div className="max-w-4xl mx-auto space-y-6 pb-20">
+            
+            {/* Action Buttons & Assignment */}
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="flex items-center gap-2.5">
+                <button onClick={() => setIsChecklistModalOpen(true)} className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#bfdbfe] text-[#2563eb] font-semibold text-[13px] hover:bg-blue-300 hover:shadow-sm transition-all">
+                  <Play className="w-3.5 h-3.5 fill-current" /> Start
+                </button>
+                <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#ffedd5] text-[#c2410c] font-semibold text-[13px] hover:bg-orange-200 transition-colors">
+                  <Pause className="w-3.5 h-3.5 fill-current" /> Pause
+                </button>
+                <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#bbf7d0] text-[#16a34a] font-semibold text-[13px] hover:bg-green-300 transition-colors">
+                  <CheckSquare className="w-3.5 h-3.5" /> Complete
+                </button>
+              </div>
               
-              {/* Card 1: Job Card Details */}
-              <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
-                <div className="p-6">
-                  <h2 className="text-[18px] font-bold text-[#1a233a] mb-6">JC-CORR-9042</h2>
-                  
-                  <div className="grid grid-cols-4 gap-x-6">
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Machine Line</label>
-                      <input type="text" value="Corrugator-2" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Shift</label>
-                      <input type="text" value="Shift B (14:00 - 22:00)" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Lead Operator</label>
-                      <input type="text" value="M. Iqbal" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Time Start</label>
-                      <input type="text" value="14:05" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
+              <div className="flex items-center bg-white border border-gray-300 rounded-md overflow-hidden h-8 shadow-sm w-full">
+                <div className="px-2.5 py-1 bg-gray-50 text-gray-700 text-[13px] font-bold border-r border-gray-300 h-full flex items-center">
+                  Assigned To:
+                </div>
+                <div className="flex-1 flex items-center px-2.5 relative">
+                  <User className="w-3.5 h-3.5 text-gray-400 absolute left-2.5" />
+                  <input 
+                    type="text" 
+                    placeholder="Select a shopfloor staff" 
+                    className="w-full pl-5 text-[13px] text-gray-600 focus:outline-none placeholder-gray-400"
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Timer Card */}
+            <div className="bg-[#f8fafc] border border-blue-100 rounded-xl p-3 w-56 shadow-sm flex gap-3 items-center">
+              <div>
+                <Clock className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-0.5">Elapsed run Time</p>
+                <p className="text-[24px] font-bold text-[#1a233a] leading-none mb-1">02:15:36</p>
+                <p className="text-[12px] font-medium text-gray-500">Started at 08:00 Am</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Middle Row (Customer Profile & Order Details) */}
+          <div className="grid grid-cols-2 gap-5">
+            
+            {/* Customer Profile */}
+            <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+              <h3 className="text-[16px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit mb-3">
+                Customer Profile
+              </h3>
+              <div className="h-[1px] w-full bg-gray-100 mb-4"></div>
+              
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white flex items-center justify-center font-bold text-[16px] shadow-sm">
+                  CP
+                </div>
+                <div>
+                  <h4 className="text-[15px] font-bold text-[#1a233a]">Century Pulp &amp; Paper</h4>
+                  <p className="text-[12px] font-medium text-gray-400 uppercase">CLIC-01142</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex">
+                  <span className="w-36 text-[13px] text-gray-500">Customer Code</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">CLIC-01142</span>
+                </div>
+                <div className="flex">
+                  <span className="w-36 text-[13px] text-gray-500">Customer Name</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">Climamax Controls Pvt Ltd</span>
+                </div>
+                <div className="flex">
+                  <span className="w-36 text-[13px] text-gray-500">GSTIN</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">29BGBBB2222B2Z2</span>
+                </div>
+                <div className="flex">
+                  <span className="w-36 text-[13px] text-gray-500">Point Of Contact</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">Sarah Jenkins</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Details */}
+            <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+              <h3 className="text-[16px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit mb-3">
+                Order Details
+              </h3>
+              <div className="h-[1px] w-full bg-gray-100 mb-4"></div>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-gray-500">Sale Order</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">SO-11294</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-gray-500">Manufacturing Order</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">MO-08217</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-gray-500">Scheduled Start Time</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">25 Aug, 08:00</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-gray-500">Actual Start Time</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">25 Aug, 09:00</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-gray-500">Scheduled End Time</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">25 Aug, 14:00</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-gray-500">Actual End Time</span>
+                  <span className="text-[13px] font-bold text-[#1a233a]">25 Aug, 15:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Specification */}
+          <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[16px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit mb-3">
+              Product Specification
+            </h3>
+            <div className="h-[1px] w-full bg-gray-100 mb-4"></div>
+            
+            <div className="grid grid-cols-6 gap-4 mb-5">
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-1">Box Type</p>
+                <p className="text-[13px] font-bold text-[#1a233a]">Universal</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-1">Paper Type</p>
+                <p className="text-[13px] font-bold text-[#1a233a]">NS</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-1">Size</p>
+                <p className="text-[13px] font-bold text-[#1a233a]">Large</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-1">Ply</p>
+                <p className="text-[13px] font-bold text-[#1a233a]">5 Ply</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-1">Joint Type</p>
+                <p className="text-[13px] font-bold text-[#1a233a]">Clean</p>
+              </div>
+              <div>
+                <p className="text-[12px] font-medium text-gray-500 mb-1">Print Type</p>
+                <p className="text-[13px] font-bold text-[#1a233a]">2 Colour Flexo</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-[#f8fafc] rounded-lg px-3 py-2 flex justify-between items-center border border-gray-200">
+                <span className="text-[13px] text-gray-500">Length</span>
+                <span className="text-[13px] font-bold text-[#1a233a]">38 cm</span>
+              </div>
+              <div className="bg-[#f8fafc] rounded-lg px-3 py-2 flex justify-between items-center border border-gray-200">
+                <span className="text-[13px] text-gray-500">Width</span>
+                <span className="text-[13px] font-bold text-[#1a233a]">32 cm</span>
+              </div>
+              <div className="bg-[#f8fafc] rounded-lg px-3 py-2 flex justify-between items-center border border-gray-200">
+                <span className="text-[13px] text-gray-500">Height</span>
+                <span className="text-[13px] font-bold text-[#1a233a]">54 cm</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Component */}
+          <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[16px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit mb-3">
+              Component
+            </h3>
+            <div className="grid grid-cols-2 gap-5">
+              
+              {/* Input Material */}
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
+                <div className="flex justify-between items-center px-3 py-2 border-b border-gray-100 bg-white">
+                  <h4 className="text-[13px] font-bold text-[#1a233a]">Input Material</h4>
+                  <button className="flex items-center gap-1 px-2 py-1 bg-black text-white text-[12px] font-medium rounded-md hover:bg-gray-800 transition-colors">
+                    <Plus className="w-3 h-3" /> Add Input
+                  </button>
+                </div>
+                <table className="w-full text-left">
+                  <thead className="bg-[#f8fafc]">
+                    <tr>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Name</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Required Qty</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Consumed Qty</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Committed Stock</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr>
+                      <td className="px-3 py-2 text-[13px] text-gray-600 font-medium">Kraft Paper</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">500</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">0</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">500.00</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">Kg</td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 text-[13px] text-gray-600 font-medium">Adhesive</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">10</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">0</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">10.00</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">Kg</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Output Material */}
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
+                <div className="flex justify-between items-center px-3 py-2 border-b border-gray-100 bg-white">
+                  <h4 className="text-[13px] font-bold text-[#1a233a]">Output Material</h4>
+                  <button className="flex items-center gap-1 px-2 py-1 bg-black text-white text-[12px] font-medium rounded-md hover:bg-gray-800 transition-colors">
+                    <Plus className="w-3 h-3" /> Add Output
+                  </button>
+                </div>
+                <table className="w-full text-left">
+                  <thead className="bg-[#f8fafc]">
+                    <tr>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Name</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Required Qty</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Consumed Qty</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Committed Stock</th>
+                      <th className="px-3 py-2 text-[12px] font-medium text-gray-400">Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr>
+                      <td className="px-3 py-2 text-[13px] text-gray-600 font-medium">Kraft Paper</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">500</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">0</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">500.00</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">Kg</td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 text-[13px] text-gray-600 font-medium">Adhesive</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">10</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">0</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">10.00</td>
+                      <td className="px-3 py-2 text-[13px] text-gray-600">Kg</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Manufacturing Specification */}
+          <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+            <h3 className="text-[16px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit mb-3">
+              Manufacturing Specification
+            </h3>
+            <div className="grid grid-cols-2 gap-5">
+              
+              {/* Paper Details */}
+              <div className="border border-gray-100 rounded-xl p-4">
+                <h4 className="text-[13px] font-bold text-[#1a233a] mb-3">Paper Details</h4>
+                <div className="h-[1px] w-full bg-gray-100 mb-3"></div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-[#f8fafc] rounded-lg p-3">
+                    <p className="text-[12px] font-medium text-gray-500 mb-1">Top Paper</p>
+                    <p className="text-[13px] font-bold text-[#1a233a]">145 GSM</p>
+                  </div>
+                  <div className="bg-[#f8fafc] rounded-lg p-3">
+                    <p className="text-[12px] font-medium text-gray-500 mb-1">Liner</p>
+                    <p className="text-[13px] font-bold text-[#1a233a]">150 GSM</p>
+                  </div>
+                  <div className="bg-[#f8fafc] rounded-lg p-3">
+                    <p className="text-[12px] font-medium text-gray-500 mb-1">Flute</p>
+                    <p className="text-[13px] font-bold text-[#1a233a]">120 GSM</p>
                   </div>
                 </div>
               </div>
 
-              {/* Card 2: Customer Details & Overview */}
-              <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
-                <div className="p-6">
-                  <h2 className="text-[16px] font-bold text-[#1a233a] mb-6">Customer Details</h2>
-                  
-                  <div className="grid grid-cols-3 gap-x-6 gap-y-6 mb-8">
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Top Liner Reel No</label>
-                      <input type="text" value="CUST-2026-00124" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Fluting Reel No</label>
-                      <input type="text" value="RL-88240 (120 GSM)" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Middle Liner Reel No</label>
-                      <input type="text" value="RL-88190 (100 GSM)" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Bottom Liner Reel No</label>
-                      <input type="text" value="RL-88205 (150 GSM)" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Opening Weight (Kg)</label>
-                      <input type="text" value="4200" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Closing Weight (Kg)</label>
-                      <input type="text" value="612" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
+              {/* Board Details */}
+              <div className="border border-gray-100 rounded-xl p-4">
+                <h4 className="text-[13px] font-bold text-[#1a233a] mb-3">Board Details</h4>
+                <div className="h-[1px] w-full bg-gray-100 mb-3"></div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-[#f8fafc] rounded-lg p-3">
+                    <p className="text-[12px] font-medium text-gray-500 mb-1">Length</p>
+                    <p className="text-[13px] font-bold text-[#1a233a]">88 cm</p>
                   </div>
-
-                  <div className="bg-[#f8f9fa] rounded-xl p-5 border border-gray-100">
-                    <h3 className="text-[14px] font-bold text-[#1a233a] mb-4">Overview</h3>
-                    <div className="grid grid-cols-3 gap-6">
-                      <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-                        <p className="text-[12px] text-gray-500 mb-1 font-medium">Paper Consumed</p>
-                        <p className="text-[20px] font-bold text-[#1a233a]">3,588 Kg</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-                        <p className="text-[12px] text-gray-500 mb-1 font-medium">Good Board Produced</p>
-                        <p className="text-[20px] font-bold text-[#16a34a]">3,427 Kg</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-                        <p className="text-[12px] text-gray-500 mb-1 font-medium">Wastage %</p>
-                        <p className="text-[20px] font-bold text-[#ef4444]">4.5%</p>
-                      </div>
-                    </div>
+                  <div className="bg-[#f8fafc] rounded-lg p-3">
+                    <p className="text-[12px] font-medium text-gray-500 mb-1">Width</p>
+                    <p className="text-[13px] font-bold text-[#1a233a]">145 cm</p>
                   </div>
-                </div>
-              </div>
-
-              {/* Card 3: Production Parameters 1 */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-6">
-                  <h2 className="text-[16px] font-bold text-[#1a233a] mb-6">Production Parameters</h2>
-                  
-                  <div className="grid grid-cols-3 gap-x-6 gap-y-6 mb-8">
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Flute Type</label>
-                      <input type="text" value="B" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Deckle Set (MM)</label>
-                      <input type="text" value="1120" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Cut Length (MM)</label>
-                      <input type="text" value="1480" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Target Speed</label>
-                      <input type="text" value="180" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Actual Avg Speed</label>
-                      <input type="text" value="164" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] text-gray-700 font-medium mb-1.5">Starch Used (KG)</label>
-                      <input type="text" value="86" readOnly className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[13px] text-gray-500 cursor-not-allowed" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="border border-gray-200 rounded-lg p-4 bg-white relative">
-                      <span className="absolute -top-2.5 left-4 bg-white px-2 text-[11px] text-gray-500 font-medium">Slitter Blade Configuration</span>
-                      <p className="text-[13px] text-gray-700 mt-2">400 - 400 - 400 - 280 (Trim)</p>
-                    </div>
-                    <div className="border border-gray-200 rounded-lg p-4 bg-white relative">
-                      <span className="absolute -top-2.5 left-4 bg-white px-2 text-[11px] text-gray-500 font-medium">Scorer Crease Settings</span>
-                      <p className="text-[13px] text-gray-700 mt-2">RSC Standard Score</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 4: Production Parameters 2 (Metrics) */}
-              <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
-                <div className="p-6">
-                  <h2 className="text-[16px] font-bold text-[#1a233a] mb-6">Production Parameters</h2>
-                  
-                  <div className="grid grid-cols-4 gap-4 mb-8">
-                    <div className="bg-[#e0f2fe] p-4 rounded-lg border border-[#bae6fd]">
-                      <p className="text-[12px] font-medium text-[#0284c7] mb-1">Good Board (SQ.MTR)</p>
-                      <p className="text-[22px] font-bold text-[#0369a1]">39720</p>
-                    </div>
-                    <div className="bg-[#fef9c3] p-4 rounded-lg border border-[#fef08a]">
-                      <p className="text-[12px] font-medium text-[#ca8a04] mb-1">Trim Wastage (KG)</p>
-                      <p className="text-[22px] font-bold text-[#a16207]">98</p>
-                    </div>
-                    <div className="bg-[#fef9c3] p-4 rounded-lg border border-[#fef08a]">
-                      <p className="text-[12px] font-medium text-[#ca8a04] mb-1">Reel-End / Splice (KG)</p>
-                      <p className="text-[22px] font-bold text-[#a16207]">41</p>
-                    </div>
-                    <div className="bg-[#fee2e2] p-4 rounded-lg border border-[#fecaca]">
-                      <p className="text-[12px] font-medium text-[#b91c1c] mb-1">Break / Rejected (SQ.MTR)</p>
-                      <p className="text-[22px] font-bold text-[#991b1b]">22</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-100 pt-6">
-                    <div className="flex justify-between items-end mb-2">
-                      <div>
-                        <h3 className="text-[14px] font-bold text-[#1a233a]">Corrugator Paper Yield Efficiency</h3>
-                        <p className="text-[11px] text-gray-500">Good Board Output Vs Material Wastage</p>
-                      </div>
-                      <div className="flex gap-4">
-                        <span className="text-[11px] font-bold text-[#16a34a]">95.5% Good Yield</span>
-                        <span className="text-[11px] font-bold text-[#ef4444]">4.5% Wastage</span>
-                      </div>
-                    </div>
-                    <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden flex">
-                      <div className="h-full bg-[#16a34a]" style={{ width: '95.5%' }}></div>
-                      <div className="h-full bg-orange-400" style={{ width: '2.5%' }}></div>
-                      <div className="h-full bg-[#ef4444]" style={{ width: '2%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 5: Downtime Log */}
-              <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
-                <div className="p-6">
-                  <h2 className="text-[16px] font-bold text-[#1a233a] mb-6">Downtime Log</h2>
-                  
-                  <div className="border border-gray-200 rounded-xl overflow-hidden">
-                    <table className="w-full text-left text-[13px]">
-                      <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                          <th className="px-4 py-3 font-semibold text-gray-600">Reason</th>
-                          <th className="px-4 py-3 font-semibold text-gray-600">Start</th>
-                          <th className="px-4 py-3 font-semibold text-gray-600">End</th>
-                          <th className="px-4 py-3 font-semibold text-gray-600">Duration</th>
-                          <th className="px-4 py-3 font-semibold text-gray-600">Remarks / Root Cause</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="px-4 py-4"><span className="px-2 py-0.5 rounded-md text-[12px] font-medium bg-[#fee2e2] text-[#ef4444]">Paper Break</span></td>
-                          <td className="px-4 py-4 text-gray-700">18:00</td>
-                          <td className="px-4 py-4 text-gray-700">18:15</td>
-                          <td className="px-4 py-4 text-gray-700">15 Min</td>
-                          <td className="px-4 py-4 text-gray-700 font-medium">Logged During Active Shift</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <div className="bg-[#f8fafc] rounded-lg p-3">
+                    <p className="text-[12px] font-medium text-gray-500 mb-1">BF</p>
+                    <p className="text-[13px] font-bold text-[#1a233a]">18</p>
                   </div>
                 </div>
               </div>
 
             </div>
           </div>
-          
-          {/* Bottom Floating Bar */}
-          {/* ── Fixed Footer ── */}
-      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-8 py-3 flex justify-end items-center gap-3 z-20">
-        <button 
-          onClick={() => navigate('/production')}
-          className="px-4 py-1.5 rounded-lg border border-gray-300 text-[13px] font-semibold text-gray-600 hover:bg-gray-50 transition-colors bg-white shadow-sm"
-        >
-          Cancel
-        </button>
-        <button className="px-4 py-1.5 rounded-lg bg-gray-100 text-[13px] font-semibold text-gray-700 hover:bg-gray-200 transition-colors flex items-center shadow-sm">
-          <Bookmark className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
-          Save Draft
-        </button>
-        <button 
-          onClick={() => navigate('/production')}
-          className="px-6 py-1.5 rounded-lg bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white text-[13px] font-bold shadow-sm hover:opacity-90 transition-colors"
-        >
-          Save
-        </button>
+
+          {/* Manufacturing Checklist */}
+          <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-[16px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
+                Manufacturing Checklist
+              </h3>
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full border-2 border-blue-600 flex items-center justify-center"></div>
+                <span className="text-[12px] text-gray-500 font-medium">3 of 3 confirmed</span>
+              </div>
+            </div>
+            
+            <div className="relative mb-4">
+              {/* Connecting Line */}
+              <div className="absolute top-3.5 left-[10%] right-[10%] h-0.5 bg-[#22c55e]"></div>
+
+              <div className="flex justify-between relative z-10 text-center">
+                {/* Step 1 */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-7 h-7 rounded-full bg-[#22c55e] flex items-center justify-center text-white mb-2 ring-4 ring-white shadow-sm">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <p className="text-[13px] font-bold text-[#1a233a]">GSM Verified</p>
+                  <p className="text-[11px] text-gray-400">Top, liner and flute match spec</p>
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-7 h-7 rounded-full bg-[#22c55e] flex items-center justify-center text-white mb-2 ring-4 ring-white shadow-sm">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <p className="text-[13px] font-bold text-[#1a233a]">Size Verified</p>
+                  <p className="text-[11px] text-gray-400">Board dimensions match order</p>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-7 h-7 rounded-full bg-[#22c55e] flex items-center justify-center text-white mb-2 ring-4 ring-white shadow-sm">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <p className="text-[13px] font-bold text-[#1a233a]">Glue Verified</p>
+                  <p className="text-[11px] text-gray-400">Adhesive specification check</p>
+                </div>
+
+                {/* Step 4 */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-7 h-7 rounded-full bg-white border-2 border-[#22c55e] flex items-center justify-center text-[#22c55e] mb-2 ring-4 ring-white shadow-sm">
+                    <Droplets className="w-3.5 h-3.5" />
+                  </div>
+                  <p className="text-[13px] font-bold text-[#1a233a]">Moisture Content</p>
+                  <p className="text-[11px] text-gray-400 mb-1.5">Recorded reading</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <div className="px-2 py-0.5 bg-white border border-gray-200 rounded text-[12px] font-bold text-gray-600 w-14 text-right">
+                      8.2
+                    </div>
+                    <span className="text-[12px] text-gray-500">%</span>
+                  </div>
+                </div>
+
+                {/* Step 5 */}
+                <div className="flex flex-col items-center flex-1">
+                  <div className="w-7 h-7 rounded-full bg-white border-2 border-[#22c55e] flex items-center justify-center text-[#22c55e] mb-2 ring-4 ring-white shadow-sm">
+                    <Gauge className="w-3.5 h-3.5" />
+                  </div>
+                  <p className="text-[13px] font-bold text-[#1a233a]">Machine avg speed</p>
+                  <p className="text-[11px] text-gray-400 mb-1.5">Recorded reading</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <div className="px-2 py-0.5 bg-white border border-gray-200 rounded text-[12px] font-bold text-gray-600 w-14 text-right">
+                      180
+                    </div>
+                    <span className="text-[12px] text-gray-500">m/min</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-5 pt-3 border-t border-gray-100">
+              <p className="text-[13px] font-bold text-[#1a233a]">Assign By: Rahul</p>
+            </div>
+          </div>
+        
+        </div>
+
       </div>
 
+      {/* Checklist Modal */}
+      {isChecklistModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white w-[500px] max-w-full rounded-xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] px-6 py-4 flex justify-between items-center text-white">
+              <h2 className="text-xl font-bold">Manufacturing Checklist</h2>
+              <X className="w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsChecklistModalOpen(false)} />
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="border border-gray-100 rounded-2xl p-2 space-y-2 shadow-sm">
+                
+                {/* GSM Verified */}
+                <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#f0fdf4] text-[#22c55e] flex items-center justify-center border border-[#dcfce7]">
+                      <Layers className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1a233a]">GSM Verified</h4>
+                      <p className="text-[11px] text-gray-400">Top, liner and flute match spec</p>
+                    </div>
+                  </div>
+                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                </div>
+
+                {/* Size Verified */}
+                <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#f0fdf4] text-[#22c55e] flex items-center justify-center border border-[#dcfce7]">
+                      <Ruler className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1a233a]">Size Verified</h4>
+                      <p className="text-[11px] text-gray-400">Board dimensions match order</p>
+                    </div>
+                  </div>
+                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                </div>
+
+                {/* Glue Verified */}
+                <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#f0fdf4] text-[#22c55e] flex items-center justify-center border border-[#dcfce7]">
+                      <FlaskConical className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1a233a]">Glue Verified</h4>
+                      <p className="text-[11px] text-gray-400">Adhesive specification check</p>
+                    </div>
+                  </div>
+                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                </div>
+
+                {/* Moisture content */}
+                <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#f0fdf4] text-[#22c55e] flex items-center justify-center border border-[#dcfce7]">
+                      <Droplet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1a233a]">Moisture content</h4>
+                      <p className="text-[11px] text-gray-400">Recorded reading</p>
+                    </div>
+                  </div>
+                  <div className="flex border border-gray-200 rounded-md overflow-hidden h-8 w-24">
+                    <input type="text" className="w-full text-right px-2 outline-none text-[13px] text-gray-700 font-medium" placeholder="0.0" />
+                    <span className="bg-gray-50 border-l border-gray-200 px-2 flex items-center text-[12px] text-gray-500">%</span>
+                  </div>
+                </div>
+
+                {/* Machine avg speed */}
+                <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#f0fdf4] text-[#22c55e] flex items-center justify-center border border-[#dcfce7]">
+                      <Gauge className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1a233a]">Machine avg speed</h4>
+                      <p className="text-[11px] text-gray-400">Recorded reading</p>
+                    </div>
+                  </div>
+                  <div className="flex border border-gray-200 rounded-md overflow-hidden h-8 w-28">
+                    <input type="text" className="w-full text-right px-2 outline-none text-[13px] text-gray-700 font-medium" placeholder="0" />
+                    <span className="bg-gray-50 border-l border-gray-200 px-2 flex items-center text-[12px] text-gray-500">m/min</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </main>
   );
 };
 
 export default CorrugatorJobDetailsPage;
+

@@ -1,41 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const mockSalesOrders = [
-  {
-    id: 1,
-    date: '25/06/2026',
-    salesOrderNo: 'SL-00001',
-    referenceNo: 'QT-00001',
-    customerName: 'CLIMAMAX PVT LTD',
-    orderStatus: 'Accepted',
-    payment: '53,900',
-    packed: '...',
-  },
-  {
-    id: 2,
-    date: '20/06/2026',
-    salesOrderNo: 'SL-00002',
-    referenceNo: 'QT-00002',
-    customerName: 'NEXUS TECHNOLOGIES',
-    orderStatus: 'Accepted',
-    payment: '12,500',
-    packed: '...',
-  },
-  {
-    id: 3,
-    date: '15/06/2026',
-    salesOrderNo: 'SL-00003',
-    referenceNo: 'QT-00003',
-    customerName: 'APEX INDUSTRIES',
-    orderStatus: 'Draft',
-    payment: '68,400',
-    packed: '...',
-  }
-];
 
 const SalesTable = () => {
   const navigate = useNavigate();
+  const [salesOrders, setSalesOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSalesOrders = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/v1/sales-orders');
+        const data = await res.json();
+        setSalesOrders(data);
+      } catch (err) {
+        console.error('Failed to fetch sales orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSalesOrders();
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500 font-medium w-full">Loading sales orders...</div>;
+  }
 
   return (
     <div className="flex-1 overflow-x-auto w-full">
@@ -55,7 +43,7 @@ const SalesTable = () => {
           </tr>
         </thead>
         <tbody>
-          {mockSalesOrders.map((order) => (
+          {salesOrders.map((order) => (
             <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-[13px]">
               <td className="py-4 pl-8 pr-6 text-center">
                 <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5" />
@@ -63,7 +51,7 @@ const SalesTable = () => {
               <td className="py-4 px-6 text-[#1a233a] font-medium">{order.date}</td>
               <td 
                 className="py-4 px-6 text-blue-600 font-medium cursor-pointer hover:underline whitespace-nowrap"
-                onClick={() => navigate(`/sales/order/${order.salesOrderNo}`)}
+                onClick={() => navigate(`/sales/order/${order.id}`)}
               >
                 {order.salesOrderNo}
               </td>

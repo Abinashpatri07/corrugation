@@ -1,24 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Search, Bookmark, UploadCloud, Calendar, User, FileText, Plus, GripVertical, CheckCircle, Percent } from 'lucide-react';
+import {
+  ChevronDown, Plus, Minus, GripVertical, Bookmark, Check, HandCoins, UploadCloud, User, Trash2
+} from 'lucide-react';
 
 const CreateBillPage = () => {
   const navigate = useNavigate();
 
+  const [rows, setRows] = useState([{ id: 1 }]);
+
+  const addRow = () => setRows(prev => [...prev, { id: Date.now() }]);
+  const removeRow = (id) => setRows(prev => prev.filter(r => r.id !== id));
+
+  const tabs = ['Expenses', 'Procurement', 'Purchase Order', 'Bills', 'Payment'];
+  const activeTab = 'Bills';
+
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-[#f4f7f9] p-1.5 gap-1.5">
-      
+    <main className="flex-1 flex flex-col overflow-hidden bg-[#f4f7f9] p-1.5 gap-1.5">
       {/* ── Sub Navigation ── */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm shrink-0 px-8">
         <nav className="flex space-x-1">
-          {['Expenses', 'Procurement', 'Purchase Order', 'Bills', 'Payment'].map(tab => (
+          {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => navigate('/purchase', { state: { activeTab: tab } })}
               className={`flex items-center gap-1 px-4 py-2 text-[13px] border-b-2 transition-colors whitespace-nowrap
-                ${tab === 'Bills'
-                  ? 'border-[#1a233a] text-[#1a233a] font-bold'
-                  : 'border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300'
+                ${activeTab === tab
+                  ? 'text-[#1a233a] font-bold border-[#1a233a]'
+                  : 'text-gray-500 font-medium border-transparent hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               {tab}
@@ -27,282 +36,311 @@ const CreateBillPage = () => {
         </nav>
       </div>
 
-      {/* ── Scrollable Form Body ── */}
-      <div className="flex-1 overflow-y-auto relative bg-[#f8fafc]">
-        
-        {/* ── Sticky Header Wrapper ── */}
-        <div className="sticky top-0 z-50 px-8 pt-6 pb-2 bg-[#f8fafc]">
-          <div className="bg-[#254754] text-white px-8 py-5 rounded-2xl flex items-center justify-between shadow-sm">
-            <h1 className="text-[22px] font-bold">Create Bills</h1>
+      {/* ── Content ── */}
+      <div className="flex-1 overflow-hidden flex flex-col gap-1.5">
 
-            {/* Workflow steps */}
-            <div className="flex items-center">
-              {/* Step 1: Expenses (Completed) */}
-              <div className="flex items-center gap-2 bg-[#dcfce7] text-[#16a34a] rounded-full px-4 py-1.5 shadow-sm">
-                <div className="w-5 h-5 rounded-full border border-[#16a34a] flex items-center justify-center">
-                  <FileText className="w-3 h-3 text-[#16a34a]" />
-                </div>
-                <span className="text-[13px] font-semibold">Expenses</span>
+        {/* Top Banner with Stepper */}
+        <div className="bg-white px-6 py-2 md:px-8 md:py-3 flex items-center justify-between border border-gray-200 rounded-2xl shadow-sm shrink-0">
+          <h2 className="text-[17px] md:text-[18px] font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">
+            Create Bill
+          </h2>
+
+          <div className="flex items-center gap-0">
+            {/* Step 1: Procurement */}
+            <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+              <div className="w-8 h-8 rounded-full bg-green-400 ring-2 ring-green-100 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+                <Check className="w-4 h-4" strokeWidth={3} />
               </div>
+              <span className="text-[10px] md:text-[11px] font-bold text-green-600">Procurement</span>
+            </div>
 
-              {/* Line */}
-              <div className="w-6 h-[1px] bg-gray-400"></div>
+            {/* Line */}
+            <div className="w-6 md:w-10 h-[2px] bg-green-400 -ml-4 -mr-4 mb-4 z-0" />
 
-              {/* Step 2: Bills (Active) */}
-              <div className="flex items-center gap-2 bg-white text-[#254754] rounded-full px-4 py-1.5 shadow-sm">
-                <div className="w-5 h-5 rounded-full bg-[#254754] flex items-center justify-center">
-                  <FileText className="w-3 h-3 text-white" />
-                </div>
-                <span className="text-[13px] font-semibold">Bills</span>
+            {/* Step 2: Purchase order */}
+            <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+              <div className="w-8 h-8 rounded-full bg-green-400 ring-2 ring-green-100 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+                <Check className="w-4 h-4" strokeWidth={3} />
               </div>
+              <span className="text-[10px] md:text-[11px] font-bold text-green-600">Purchase order</span>
+            </div>
 
-              {/* Line */}
-              <div className="w-6 h-[1px] bg-gray-400"></div>
+            {/* Line */}
+            <div className="w-6 md:w-10 h-[2px] bg-green-400 -ml-4 -mr-4 mb-4 z-0" />
 
-              {/* Step 3: Payment (Upcoming) */}
-              <div className="flex items-center gap-2 bg-[#5b8a9e] text-white rounded-full px-4 py-1.5 shadow-sm">
-                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                  <svg className="w-3 h-3 text-[#5b8a9e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <span className="text-[13px] font-semibold">Payment</span>
+            {/* Step 3: Bill (Active) */}
+            <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff7a59] via-[#d54a88] to-[#402de8] ring-2 ring-pink-50 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
+              <span className="text-[10px] md:text-[11px] font-semibold text-[#1a233a] text-center leading-tight">Bill</span>
+            </div>
+
+            {/* Line */}
+            <div className="w-6 md:w-10 h-[2px] bg-gray-200 -ml-4 -mr-4 mb-4 z-0" />
+
+            {/* Step 4: Payment */}
+            <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+              <div className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+                <HandCoins className="w-4 h-4" strokeWidth={2} />
+              </div>
+              <span className="text-[10px] md:text-[11px] font-medium text-gray-500">Payment</span>
             </div>
           </div>
         </div>
 
-        {/* ── Main Form Layout ── */}
-        <div className="px-8 pb-24 pt-4 space-y-6">
-          
-          {/* Bill Header */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative overflow-hidden p-8">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#3b82f6]" />
-            
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-[18px] font-bold text-[#1e293b]">Bill Header</h2>
-                <p className="text-[12px] text-gray-500">Core identification and posting details</p>
-              </div>
-              <span className="px-3 py-1 bg-[#dcfce7] text-[#16a34a] text-[11px] font-bold rounded-full border border-green-200">
-                Draft — Auto-saving
-              </span>
-            </div>
+        {/* ── Scrollable Form Area ── */}
+        <div className="flex-1 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
+
+          {/* ── Section 1: Bill Header ── */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-5 shrink-0">
+            <h3 className="text-[16px] font-bold text-[#1a233a] mb-5">Vendor Name</h3>
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-              <div className="col-span-2">
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Vendor Name <span className="text-gray-500">*</span></label>
+              
+              {/* Vendor Name */}
+              <div className="col-span-2 flex flex-col gap-1.5">
+                <label className="text-[12px] font-semibold text-gray-600">Vendor Name <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <select className="w-full border border-gray-200 rounded-md pl-3 pr-10 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500 appearance-none bg-white">
-                    <option></option>
+                  <select className="w-full border border-blue-200 rounded-md bg-[#f8faff] text-blue-600 pl-3 pr-10 py-2.5 text-[13px] shadow-sm focus:outline-none focus:border-blue-500 appearance-none">
+                    <option>ZAP Private Limited</option>
                   </select>
+                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-blue-600 pointer-events-none" />
+                </div>
+                
+                {/* Billing Address Card */}
+                <div className="mt-3 w-[300px] border border-blue-200 rounded-lg p-4 bg-[#f8faff] shadow-sm">
+                  <div className="flex items-start gap-2">
+                    <User className="w-4 h-4 text-gray-500 mt-0.5" />
+                    <div>
+                      <h4 className="text-[14px] font-bold text-[#1a233a]">Mr Ramnath</h4>
+                      <p className="text-[13px] text-[#1a233a] leading-relaxed mt-1">
+                        Silk Board<br/>
+                        Bangalore<br/>
+                        Karnataka 560068<br/>
+                        India<br/>
+                        Phone: +91-9876543222
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Bill# <span className="text-gray-500">*</span></label>
-                <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Order Number<span className="text-gray-500">*</span></label>
-                <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500" />
+              {/* Bill# */}
+              <div className="flex items-center gap-4">
+                <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Bill <span className="text-red-500">*</span></label>
+                <input type="text" placeholder="Enter Bill Number" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
               </div>
 
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Bill Date <span className="text-gray-500">*</span></label>
-                <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Due Date<span className="text-gray-500">*</span></label>
-                <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500" />
+              {/* Order Number */}
+              <div className="flex items-center gap-4">
+                <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Order Number <span className="text-red-500">*</span></label>
+                <input type="text" placeholder="Enter Order Number" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
               </div>
 
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Accounts Payable <span className="text-gray-500">*</span></label>
-                <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500" />
-              </div>
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Payment Terms <span className="text-gray-500">*</span></label>
-                <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500" />
+              {/* Bill Date */}
+              <div className="flex items-center gap-4">
+                <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Bill Date <span className="text-red-500">*</span></label>
+                <input type="text" placeholder="Enter Bill Date" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
               </div>
 
-              <div className="col-span-2">
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Subject <span className="text-red-500">*</span></label>
-                <textarea rows={3} placeholder="Enter subject within 250 words" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-gray-700 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+              {/* Due Date */}
+              <div className="flex items-center gap-4">
+                <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Due Date <span className="text-red-500">*</span></label>
+                <input type="text" placeholder="Enter Due Date" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
               </div>
+
+              {/* Accounts Payable */}
+              <div className="flex items-center gap-4">
+                <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Accounts Payable</label>
+                <input type="text" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+              </div>
+
+              {/* Subject */}
+              <div className="flex items-center gap-4">
+                <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Subject</label>
+                <input type="text" placeholder="Enter 250 Character Subject" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+              </div>
+
             </div>
           </div>
 
-          {/* Item Table */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative overflow-hidden p-8">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#3b82f6]" />
-            
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-[18px] font-bold text-[#1e293b]">Item Table</h2>
-              <button className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-full text-[13px] font-semibold hover:bg-blue-50">
-                Bulk Action <ChevronDown className="w-4 h-4" />
-              </button>
+          {/* ── Item Table ── */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-5 shrink-0">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-[16px] font-bold text-[#1a233a]">Item Table</h2>
+              <div className="relative">
+                <button className="flex items-center gap-2 border border-gray-200 rounded-md px-4 py-1.5 text-[12px] font-semibold text-gray-600 bg-white hover:bg-gray-50 transition-colors shadow-sm">
+                  Bulk Action <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              </div>
             </div>
 
-            <div className="w-full overflow-x-auto border-b border-gray-200 pb-2 mb-4">
-              <table className="w-full text-left min-w-[800px]">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="py-3 font-medium text-gray-500 text-[13px] w-8"></th>
-                    <th className="py-3 font-medium text-gray-500 text-[13px] w-64">Item Details</th>
-                    <th className="py-3 font-medium text-gray-500 text-[13px] w-48">Account</th>
-                    <th className="py-3 font-medium text-gray-500 text-[13px] w-32">Quantity</th>
-                    <th className="py-3 font-medium text-gray-500 text-[13px] w-32">Rate</th>
-                    <th className="py-3 font-medium text-gray-500 text-[13px] w-48">Customer Details</th>
-                    <th className="py-3 font-medium text-gray-500 text-[13px]">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-transparent">
-                    <td className="py-3 pr-2">
-                      <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-                    </td>
-                    <td className="py-3 pr-4">
-                      <div className="flex gap-2">
-                        <div className="w-9 h-9 rounded bg-[#f1f5f9] flex items-center justify-center shrink-0">
-                          <div className="w-4 h-4 bg-indigo-500 rounded-sm"></div>
-                        </div>
-                        <input type="text" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px]" />
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-md pl-3 pr-8 py-2 text-[13px] appearance-none bg-white">
-                          <option></option>
-                        </select>
-                        <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-2.5 pointer-events-none" />
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <div className="flex items-center border border-gray-200 rounded-md">
-                        <button className="px-2 text-gray-500 hover:bg-gray-50">-</button>
-                        <input type="text" className="w-full text-center py-2 text-[13px] outline-none" />
-                        <button className="px-2 text-gray-500 hover:bg-gray-50">+</button>
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-[13px] text-gray-500">₹</span>
-                        <input type="text" className="w-full border border-gray-200 rounded-md pl-7 pr-3 py-2 text-[13px]" />
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-md pl-3 pr-8 py-2 text-[13px] appearance-none bg-white">
-                          <option></option>
-                        </select>
-                        <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-2.5 pointer-events-none" />
-                      </div>
-                    </td>
-                    <td className="py-3">
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-[13px] text-gray-500">₹</span>
-                        <input type="text" className="w-full border border-gray-200 rounded-md pl-7 pr-3 py-2 text-[13px]" />
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Table header */}
+            <div className="grid gap-2 border-b border-gray-200 pb-2 mb-2"
+              style={{ gridTemplateColumns: '32px 1fr 140px 140px 180px 140px 32px' }}>
+              <div />
+              <div className="text-[12px] font-semibold text-gray-500">Item Details</div>
+              <div className="text-[12px] font-semibold text-gray-500">Quantity</div>
+              <div className="text-[12px] font-semibold text-gray-500">Rate</div>
+              <div className="text-[12px] font-semibold text-gray-500">Customer Details</div>
+              <div className="text-[12px] font-semibold text-gray-500">Amount</div>
+              <div />
             </div>
 
-            <div className="flex justify-between items-center mt-2">
-              <button className="flex items-center gap-2 text-blue-600 text-[13px] font-semibold hover:bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200">
-                Add New Row <Plus className="w-4 h-4" />
-              </button>
-              <p className="text-[11px] text-gray-500">Items Selected Dynamically Synchronize With Central Ledger Accounts Automatically.</p>
-            </div>
-          </div>
+            {/* Table rows */}
+            {rows.map(row => (
+              <div key={row.id} className="grid gap-2 items-center py-2"
+                style={{ gridTemplateColumns: '32px 1fr 140px 140px 180px 140px 32px' }}>
+                <GripVertical className="w-4 h-4 text-gray-300 cursor-grab mx-auto" />
 
-          {/* Bottom Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-6">
-            
-            {/* Left Col: Upload & Remarks */}
-            <div className="space-y-6">
-              
-              {/* Receipts Dropzone */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-col items-center justify-center text-center p-12">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#a5f3fc]" />
-                <div className="absolute inset-2 border-2 border-dashed border-blue-200 bg-[#f4fbff] rounded-xl z-0" />
-                <div className="z-10 flex flex-col items-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                    <UploadCloud className="w-6 h-6 text-blue-500" />
+                {/* Item Details */}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded bg-gradient-to-tr from-[#d54a88] to-[#ff7a59] flex items-center justify-center text-white shrink-0 shadow-sm">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                    </svg>
                   </div>
-                  <h4 className="text-[16px] font-semibold text-[#1e293b] mb-1">Drag or Drop your Receipts</h4>
-                  <p className="text-[12px] text-gray-500 mb-6">Maximum file size allowed is 10MB</p>
-                  <button className="bg-blue-600 text-white font-semibold text-[13px] px-6 py-2 rounded-full shadow-sm hover:bg-blue-700">
-                    Upload Your Files
+                  <input type="text" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Quantity */}
+                <div className="flex items-center border border-gray-200 rounded-md shadow-sm overflow-hidden bg-white">
+                  <button className="px-2 py-2 hover:bg-gray-50 text-gray-400">
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
+                  <input type="number" defaultValue="1" className="flex-1 text-center text-[12px] py-2 focus:outline-none w-10 border-none" />
+                  <button className="px-2 py-2 hover:bg-gray-50 text-gray-400">
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Rate */}
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-400 text-[12px]">₹</span>
+                  <input type="number" className="w-full border border-gray-200 rounded-md shadow-sm pl-7 pr-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Customer Details */}
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-gray-400">
+                    <User className="w-3.5 h-3.5" />
+                  </span>
+                  <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm pl-8 pr-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                </div>
+
+                {/* Amount */}
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-400 text-[12px]">₹</span>
+                  <input type="number" className="w-full border border-gray-200 rounded-md shadow-sm pl-7 pr-3 py-2 text-[12px] focus:outline-none focus:border-blue-500 bg-gray-50" readOnly />
+                </div>
+
+                {/* Remove row */}
+                <button onClick={() => removeRow(row.id)} className="w-7 h-7 rounded bg-red-50 text-red-400 shadow-sm hover:text-red-500 hover:bg-red-100 transition-colors flex items-center justify-center mx-auto">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+
+            {/* Add Row + note */}
+            <div className="flex justify-between items-center mt-6 border-t border-gray-100 pt-4">
+              <button onClick={addRow} className="flex items-center gap-1.5 text-[12px] text-white bg-gradient-to-r from-[#ff7a59] to-[#d54a88] rounded-md px-4 py-2 hover:opacity-90 transition-opacity font-semibold shadow-sm">
+                Add new row <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+              </button>
+              <p className="text-[10px] text-gray-400">Items Selected Dynamically Synchronize With Central Ledger Accounts Automatically.</p>
+            </div>
+          </div>
+
+          {/* ── Bottom Section ── */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-6 shrink-0 pb-4">
+            
+            {/* Left Column: Upload & Remarks */}
+            <div className="flex flex-col gap-4">
+              
+              {/* Upload Box */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center shrink-0">
+                  <UploadCloud className="w-5 h-5 text-pink-500" />
+                </div>
+                <div>
+                  <h4 className="text-[14px] font-bold text-[#1a233a]">click here to Upload</h4>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Supporting Format IMG, PDF, JPG, PNG Format (Max 10 Mb)</p>
                 </div>
               </div>
 
               {/* Remarks */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative overflow-hidden p-6">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#3b82f6]" />
-                <h3 className="text-[16px] font-bold text-[#1e293b] mb-4">Remarks & Note</h3>
-                <textarea rows={6} className="w-full border border-gray-200 rounded-md p-3 text-[13px] focus:outline-none focus:border-blue-500 resize-none"></textarea>
-                <p className="text-[11px] text-gray-500 mt-2">It Will Not Be Shown In PDF</p>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex-1 flex flex-col">
+                <h3 className="text-[15px] font-bold text-[#1a233a] mb-4">Remarks & Note</h3>
+                <textarea 
+                  className="w-full flex-1 border border-gray-200 rounded-md shadow-sm p-3 text-[13px] resize-none focus:outline-none focus:border-blue-500 min-h-[120px]" 
+                  placeholder="Enter remarks..."
+                />
+                <p className="text-[11px] text-gray-400 mt-3">It Will Not Be Shown In PDF</p>
               </div>
 
             </div>
 
-            {/* Right Col: Totals Console */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative overflow-hidden p-6 flex flex-col">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#3b82f6]" />
-              <h3 className="text-[18px] font-bold text-[#1a233a] mb-6">Invoice Totals Console</h3>
-              
-              <div className="space-y-5 flex-1">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-[13px] font-bold text-[#1a233a]">Discount</label>
-                    <div className="flex border border-gray-200 rounded-md overflow-hidden bg-white">
-                      <button className="px-2 py-0.5 text-[12px] text-gray-600 hover:bg-gray-50 border-r border-gray-200">%</button>
-                      <button className="px-2 py-0.5 text-[12px] text-white bg-blue-600">₹</button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <input type="text" className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-[13px]" />
-                    <span className="text-[13px] font-bold text-gray-700 w-16 text-right">-$0.00</span>
-                  </div>
-                </div>
+            {/* Right Column: Invoice Totals */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex flex-col">
+              <h3 className="text-[16px] font-bold text-[#1a233a] mb-6">Invoice Totals</h3>
 
+              <div className="flex justify-between items-center text-[13px] font-bold text-[#1a233a] mb-6">
+                <span>Total Quantity : 1</span>
+              </div>
+
+              <div className="flex items-center gap-4 mb-6 text-[12px] font-bold text-gray-500">
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="tax_type" className="w-3.5 h-3.5 text-pink-500 shadow-sm" />
+                  TDS
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer text-[#d54a88]">
+                  <input type="radio" name="tax_type" className="w-3.5 h-3.5 accent-[#d54a88] shadow-sm" defaultChecked />
+                  TCS
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-5 flex-1">
+                {/* Discount */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-[13px] font-bold text-[#1a233a]">Tax Allocation Mapping</label>
-                    <div className="flex items-center gap-3 text-[12px] text-gray-600">
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="tax_type" className="w-3.5 h-3.5 text-blue-600" />
-                        TDS
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input type="radio" name="tax_type" className="w-3.5 h-3.5 text-blue-600" defaultChecked />
-                        TCS
-                      </label>
+                    <label className="text-[12px] font-bold text-[#1a233a]">Discount</label>
+                    <div className="flex border border-gray-200 rounded shadow-sm overflow-hidden">
+                      <button className="px-2 py-0.5 text-[11px] font-bold text-gray-500 bg-white hover:bg-gray-50">%</button>
+                      <button className="px-2 py-0.5 text-[11px] font-bold text-white bg-gradient-to-r from-[#d54a88] to-[#ff7a59]">₹</button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <input type="text" className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-[13px]" />
-                    <span className="text-[13px] font-bold text-gray-700 w-16 text-right">-$0.00</span>
+                  <div className="flex items-center justify-between">
+                    <input type="text" defaultValue="0.00" className="w-[70%] border border-gray-200 shadow-sm rounded-md px-3 py-2 text-[12px] focus:outline-none" />
+                    <span className="text-[13px] font-bold text-[#1a233a]">0.00</span>
                   </div>
                 </div>
 
+                {/* Tax */}
                 <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Manual Adjustments</label>
-                  <div className="flex items-center gap-3">
-                    <input type="text" className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-[13px]" />
-                    <span className="text-[13px] font-bold text-gray-700 w-16 text-right">-$0.00</span>
+                  <label className="block text-[12px] font-bold text-[#1a233a] mb-2">Tax</label>
+                  <div className="flex items-center justify-between">
+                    <div className="relative w-[70%]">
+                      <select className="w-full border border-gray-200 rounded-md shadow-sm pl-3 pr-8 py-2 text-[12px] focus:outline-none appearance-none bg-white text-gray-400">
+                        <option>Select Tax</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                    </div>
+                    <span className="text-[13px] font-bold text-[#1a233a]">- 0.00</span>
                   </div>
                 </div>
               </div>
 
               {/* Grand Total */}
-              <div className="mt-6 bg-[#4a3b69] rounded-xl p-6 text-white flex justify-between items-center">
-                <span className="text-[16px] font-medium opacity-90">Grand Total</span>
-                <span className="text-[24px] font-bold">₹7,20,951.00</span>
+              <div className="mt-6 bg-[#f8f5ff] rounded-xl px-5 py-4 shadow-sm border border-[#eee8fc] flex justify-between items-center">
+                <div>
+                  <div className="text-[15px] font-bold text-[#1a233a]">Grand Total</div>
+                  <div className="text-[10px] text-gray-500 mt-1">(Charges - Allowances + Adjustment)</div>
+                </div>
+                <div className="text-[20px] font-bold text-[#5a32ea]">
+                  ₹7,20,951.00
+                </div>
               </div>
             </div>
 
@@ -310,7 +348,6 @@ const CreateBillPage = () => {
         </div>
       </div>
 
-      {/* ── Fixed Footer ── */}
       {/* ── Fixed Footer ── */}
       <div className="flex-shrink-0 bg-white border-t border-gray-200 px-8 py-3 flex justify-end items-center gap-3">
         <button 
@@ -331,7 +368,7 @@ const CreateBillPage = () => {
         </button>
       </div>
 
-    </div>
+    </main>
   );
 };
 

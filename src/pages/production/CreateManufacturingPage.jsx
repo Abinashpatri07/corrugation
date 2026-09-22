@@ -12,7 +12,7 @@ const CreateManufacturingPage = () => {
       {/* ── Sub Navigation ── */}
       <div className="flex-shrink-0 border-b border-gray-200 bg-white px-6">
         <nav className="flex space-x-1">
-          {['Machine', 'Manufacturing', 'Corrugator Job', 'QC'].map(tab => (
+          {['Machine', 'Manufacturing', 'Corrugator Job'].map(tab => (
             <button
               key={tab}
               className={`flex items-center gap-1 px-4 py-4 text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap

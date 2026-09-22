@@ -1,38 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const mockQuotes = [
-  {
-    id: 1,
-    date: '25/06/2026',
-    quoteNo: 'QT-00001',
-    customerName: 'CLIMAMAX PVT LTD',
-    boxSpec: '5-Ply',
-    quantity: '2,500',
-    amount: '53,900',
-  },
-  {
-    id: 2,
-    date: '20/06/2026',
-    quoteNo: 'QT-00002',
-    customerName: 'NEXUS TECHNOLOGIES',
-    boxSpec: '3-Ply',
-    quantity: '1,000',
-    amount: '12,500',
-  },
-  {
-    id: 3,
-    date: '15/06/2026',
-    quoteNo: 'QT-00003',
-    customerName: 'APEX INDUSTRIES',
-    boxSpec: '5-Ply',
-    quantity: '3,200',
-    amount: '68,400',
-  }
-];
 
 const QuotesTable = () => {
   const navigate = useNavigate();
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/v1/quotes');
+        const data = await response.json();
+        if (data.success) {
+          setQuotes(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch quotes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuotes();
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500 font-medium">Loading quotes...</div>;
+  }
+
+  if (quotes.length === 0) {
+    return <div className="p-8 text-center text-gray-500 font-medium">No quotes found. Create a new quote to get started.</div>;
+  }
 
   return (
     <div className="flex-1 overflow-x-auto w-full">
@@ -51,7 +48,7 @@ const QuotesTable = () => {
           </tr>
         </thead>
         <tbody>
-          {mockQuotes.map((quote) => (
+          {quotes.map((quote) => (
             <tr key={quote.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-[13px]">
               <td className="py-4 pl-8 pr-6 text-center">
                 <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5" />
@@ -63,10 +60,10 @@ const QuotesTable = () => {
               >
                 {quote.quoteNo}
               </td>
-              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.customerName}</td>
-              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.boxSpec}</td>
-              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.quantity}</td>
-              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.amount}</td>
+              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.customerName || 'N/A'}</td>
+              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.boxSpec || 'N/A'}</td>
+              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.quantity || 0}</td>
+              <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.amount || '0.00'}</td>
             </tr>
           ))}
         </tbody>
