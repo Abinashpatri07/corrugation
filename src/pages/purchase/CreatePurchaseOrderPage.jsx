@@ -933,18 +933,18 @@ const CreatePurchaseOrderPage = () => {
 
 
                     const response = await axios.get(
-                      `http://localhost:3000/api/v1/purchase-orders/vendor/${vendorId}/addresses`
+                      `http://localhost:3000/api/v1/vendors/${vendorId}`
                     );
 
 
                     console.log(
-                      "Purchase Order Vendor Address Response:",
+                      "Vendor Details Response:",
                       response.data
                     );
 
 
                     const addresses =
-                      response.data?.data || {};
+                      response.data?.data?.addresses || {};
 
 
                     /*
