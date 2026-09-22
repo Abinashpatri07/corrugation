@@ -1,6 +1,420 @@
-import React from 'react';
+// import React from 'react';
+// import { useNavigate, useParams } from 'react-router-dom';
+// import { Plus,
+//   MoreHorizontal,
+//   Search,
+//   Edit,
+//   Send,
+//   Printer,
+//   Download,
+//   Check,
+//   HandCoins,
+//   ArrowRightLeft, ChevronDown } from 'lucide-react';
+
+// const BillDetailPage = () => {
+//   const navigate = useNavigate();
+//   const { id } = useParams();
+
+//   const tabs = ['Expenses', 'Procurement', 'Purchase Order', 'Bills', 'Payment'];
+
+//   return (
+//     <main className="flex-1 overflow-hidden bg-[#f4f7fb] flex flex-col relative p-1.5 gap-1.5">
+//       {/* Sub Navigation */}
+//       <div className="bg-white border border-gray-200 rounded-xl shadow-sm shrink-0 px-8">
+//         <nav className="flex space-x-1">
+//           {tabs.map((tab) => (
+//             <button
+//               key={tab}
+//               onClick={() => navigate('/purchase', { state: { activeTab: tab } })}
+//               className={`flex items-center gap-1 px-4 py-2 text-[13px] border-b-2 transition-colors whitespace-nowrap
+//                 ${tab === 'Bills'
+//                   ? 'border-[#1a233a] text-[#1a233a] font-bold'
+//                   : 'border-transparent text-gray-500 font-medium hover:text-gray-700 hover:border-gray-300'
+//                 }`}
+//             >
+//               {tab}
+//             </button>
+//           ))}
+//         </nav>
+//       </div>
+
+//       {/* Content Wrapper */}
+//       <div className="flex-1 flex flex-col gap-1.5 min-h-0">
+
+//         {/* Top Banner with Stepper */}
+//         <div className="bg-white px-6 py-2 md:px-8 md:py-3 flex items-center justify-between border border-gray-200 rounded-2xl shadow-sm shrink-0">
+//           <h2 className="text-[17px] md:text-[18px] font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">
+//             Bill View
+//           </h2>
+
+//           <div className="flex items-center gap-0">
+//             {/* Step 1: Procurement */}
+//             <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+//               <div className="w-8 h-8 rounded-full bg-green-400 ring-2 ring-green-100 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+//                 <Check className="w-4 h-4" strokeWidth={3} />
+//               </div>
+//               <span className="text-[10px] md:text-[11px] font-bold text-green-600">Procurement</span>
+//             </div>
+
+//             {/* Line */}
+//             <div className="w-6 md:w-10 h-[2px] bg-green-400 -ml-4 -mr-4 mb-4 z-0" />
+
+//             {/* Step 2: Purchase order */}
+//             <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+//               <div className="w-8 h-8 rounded-full bg-green-400 ring-2 ring-green-100 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+//                 <Check className="w-4 h-4" strokeWidth={3} />
+//               </div>
+//               <span className="text-[10px] md:text-[11px] font-bold text-green-600">Purchase order</span>
+//             </div>
+
+//             {/* Line */}
+//             <div className="w-6 md:w-10 h-[2px] bg-green-400 -ml-4 -mr-4 mb-4 z-0" />
+
+//             {/* Step 3: Bill */}
+//             <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+//               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff7a59] via-[#d54a88] to-[#402de8] ring-2 ring-pink-50 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+//                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+//                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+//                 </svg>
+//               </div>
+//               <span className="text-[10px] md:text-[11px] font-semibold text-[#1a233a] text-center leading-tight">Bill</span>
+//             </div>
+
+//             {/* Line */}
+//             <div className="w-6 md:w-10 h-[2px] bg-gray-200 -ml-4 -mr-4 mb-4 z-0" />
+
+//             {/* Step 4: Payment */}
+//             <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
+//               <div className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-gray-400 flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
+//                 <HandCoins className="w-4 h-4" strokeWidth={2} />
+//               </div>
+//               <span className="text-[10px] md:text-[11px] font-medium text-gray-500">Payment</span>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Split View Content */}
+//         <div className="flex-1 flex overflow-hidden gap-1.5">
+
+//           {/* Left Sidebar (Bills List) */}
+//           <div className="w-[270px] bg-white rounded-2xl border border-gray-200 flex flex-col flex-shrink-0 shadow-sm overflow-hidden">
+//             <div className="p-5 border-b border-gray-100">
+//               <div className="flex items-center justify-between mb-4">
+//                 <div className="flex items-center space-x-1 cursor-pointer">
+//                 <h3 className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">All Bills</h3>
+//                 <ChevronDown className="w-5 h-5 text-[#8b5cf6]" />
+//               </div>
+//                 <div className="flex items-center space-x-2">
+//                   <button
+//                     onClick={() => navigate('/purchase/bill/new')}
+//                     className="w-7 h-7 bg-gray-900 hover:bg-black text-white rounded-full flex items-center justify-center shadow-sm transition-colors"
+//                   >
+//                     <Plus className="w-4 h-4" />
+//                   </button>
+//                   <button className="w-7 h-7 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full flex items-center justify-center transition-colors">
+//                     <MoreHorizontal className="w-4 h-4" />
+//                   </button>
+//                 </div>
+//               </div>
+
+//               <div className="relative">
+//                 <div className="relative flex items-center">
+//                   <Search className="absolute left-3 w-3.5 h-3.5 text-gray-400" />
+//                   <input
+//                     type="text"
+//                     placeholder="Search bills..."
+//                     className="w-full bg-[#f8fafc] border border-gray-200 rounded-lg pl-8 pr-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6b6b]/30 text-[#1a2337] transition-all"
+//                   />
+//                 </div>
+//               </div>
+//             </div>
+
+//             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+//               {/* Active Card */}
+//               <div className="bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md transition-all shadow-sm border border-transparent mb-2.5">
+//                 <div className="flex justify-between items-center mb-0.5">
+//                   <span className="text-[12px] font-medium text-[#374151]">BILL-00001</span>
+//                   <span className="text-[9px] text-gray-400 font-medium tracking-wide">25/06/2026</span>
+//                 </div>
+//                 <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+//                   CENTURY PULP & PAPER
+//                 </h3>
+//                 <div className="flex justify-between items-end mt-1">
+//                   <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
+//                     OPEN
+//                   </span>
+//                   <span className="text-[14px] font-bold text-[#111827]">₹53,900.00</span>
+//                 </div>
+//               </div>
+
+//               {/* Inactive Card 1 */}
+//               <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
+//                 <div className="flex justify-between items-center mb-0.5">
+//                   <span className="text-[12px] font-medium text-[#374151]">BILL-00002</span>
+//                   <span className="text-[9px] text-gray-400 font-medium tracking-wide">20/06/2026</span>
+//                 </div>
+//                 <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+//                   GLOBAL SUPPLIES INC
+//                 </h3>
+//                 <div className="flex justify-between items-end mt-1">
+//                   <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
+//                     OPEN
+//                   </span>
+//                   <span className="text-[14px] font-bold text-[#111827]">₹12,500.00</span>
+//                 </div>
+//               </div>
+
+//               {/* Inactive Card 2 */}
+//               <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
+//                 <div className="flex justify-between items-center mb-0.5">
+//                   <span className="text-[12px] font-medium text-[#374151]">BILL-00003</span>
+//                   <span className="text-[9px] text-gray-400 font-medium tracking-wide">15/06/2026</span>
+//                 </div>
+//                 <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+//                   TECHHARDWARE LTD
+//                 </h3>
+//                 <div className="flex justify-between items-end mt-1">
+//                   <span className="bg-[#f3f4f6] text-[#4b5563] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
+//                     CLOSED
+//                   </span>
+//                   <span className="text-[14px] font-bold text-[#111827]">₹0.00</span>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Right Main Content */}
+//           <div className="flex-1 flex flex-col gap-1.5 overflow-hidden min-h-0">
+//             {/* Detail Header */}
+//             <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
+//               <div className="flex items-center space-x-3">
+//                 <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
+//                   {id && id !== 'new' ? (isNaN(id) ? id : `BILL-${id.toString().padStart(5, '0')}`) : 'BILL-00001'}
+//                 </h2>
+//                 <span className="bg-[#ffe8e8] text-[#ff6b6b] text-[10px] font-bold px-2 py-0.5 rounded-full">
+//                   Unpaid
+//                 </span>
+//               </div>
+//               <div className="flex items-center space-x-2">
+//                 <button className="w-8 h-8 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full flex items-center justify-center text-gray-600 transition-colors shadow-sm">
+//                   <Edit className="w-3.5 h-3.5" />
+//                 </button>
+//                 <button className="w-8 h-8 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full flex items-center justify-center text-gray-600 transition-colors shadow-sm">
+//                   <Send className="w-3.5 h-3.5" />
+//                 </button>
+//                 <button className="w-8 h-8 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full flex items-center justify-center text-gray-600 transition-colors shadow-sm">
+//                   <Printer className="w-3.5 h-3.5" />
+//                 </button>
+//                 <button onClick={() => navigate('/purchase/payments')} className="flex items-center px-4 py-1.5 bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] hover:opacity-90 text-white rounded-full text-xs font-bold transition-opacity shadow-sm">
+//                   <Download className="w-3 h-3 mr-1.5" />
+//                   Record Payment
+//                 </button>
+//                 <button className="w-8 h-8 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full flex items-center justify-center text-gray-600 transition-colors shadow-sm">
+//                   <MoreHorizontal className="w-3.5 h-3.5" />
+//                 </button>
+//               </div>
+//             </div>
+
+//             {/* Main Details Containers */}
+//             <div className="flex-1 overflow-y-auto custom-scrollbar pb-2 pr-1">
+//               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-4 min-h-full">
+
+//                 {/* Top Details Grid */}
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+//                   {/* Customer Profile Box */}
+//                   <div className="bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
+//                     <div className="px-4 pt-4 pb-2 mx-1 border-b border-gray-200">
+//                       <h3 className="text-[15px] font-bold text-gray-900 px-1">Vendor Profile</h3>
+//                     </div>
+//                     <div className="px-5 pt-4 pb-5 flex-1">
+//                       <div className="flex items-center mb-6">
+//                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ff4d4d] to-[#9333ea] text-white flex items-center justify-center text-xs font-bold shadow-sm mr-3 flex-shrink-0">
+//                           CC
+//                         </div>
+//                         <div>
+//                           <h4 className="text-[13px] font-bold text-gray-900">CENTURY PULP & PAPER</h4>
+//                           <p className="text-[10px] text-gray-400 mt-0.5 uppercase tracking-wide">BL- 00001</p>
+//                         </div>
+//                       </div>
+//                       <div className="space-y-2.5">
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">GSTIN</span>
+//                           <span className="text-[12px] font-bold text-gray-900">29BGBBB2222B2Z2</span>
+//                         </div>
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">Point Of Contact</span>
+//                           <span className="text-[12px] font-bold text-gray-900">P. Verma</span>
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+
+//                   {/* Details Box */}
+//                   <div className="bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
+//                     <div className="px-4 pt-4 pb-2 mx-1 border-b border-gray-200">
+//                       <h3 className="text-[15px] font-bold text-gray-900 px-1">Details</h3>
+//                     </div>
+//                     <div className="px-5 pt-4 pb-5 flex-1">
+//                       <div className="space-y-2.5">
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">Order Number</span>
+//                           <span className="text-[12px] font-bold text-gray-900">5453</span>
+//                         </div>
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">Bill Date</span>
+//                           <span className="text-[12px] font-bold text-gray-900">15/07/2026</span>
+//                         </div>
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">Due Date</span>
+//                           <span className="text-[12px] font-bold text-gray-900">15/07/2026</span>
+//                         </div>
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">Payment Terms</span>
+//                           <span className="text-[12px] font-bold text-gray-900">Due On Receipt</span>
+//                         </div>
+//                         <div className="grid grid-cols-2">
+//                           <span className="text-[12px] font-medium text-gray-400">Balance Due</span>
+//                           <span className="text-[12px] font-bold text-gray-900">₹5,000.00</span>
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 {/* Addresses Box */}
+//                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col lg:flex-row mt-2">
+//                   <div className="flex-1 px-5 py-4">
+//                     <h5 className="text-[14px] font-medium text-gray-500 mb-2">Billing Address</h5>
+//                     <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
+//                       648/A, OM Chambers, Binnamangala 1st<br />
+//                       Stage, Bengaluru, Karnataka 560038
+//                     </p>
+//                   </div>
+
+//                   {/* Divider */}
+//                   <div className="w-auto mx-5 lg:mx-0 lg:w-[2px] h-[1px] lg:h-auto bg-pink-200/60 lg:my-4 rounded-full"></div>
+
+//                   <div className="flex-1 px-5 py-4">
+//                     <h5 className="text-[14px] font-medium text-gray-500 mb-2">Shipping Address</h5>
+//                     <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
+//                       Warehouse No. 12,<br />
+//                       KIADB Industrial Area, Whitefield, Bengaluru,<br />
+//                       Karnataka 560066
+//                     </p>
+//                   </div>
+//                 </div>
+
+//                 {/* Grid for Notes and Totals */}
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+//                   {/* Notes & Terms Box */}
+//                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+//                     <h5 className="text-[15px] font-bold text-[#1a233a] mb-3 pb-3 border-b border-gray-100">Internal Bill Notes / Reminders</h5>
+//                     <div className="bg-white border border-blue-50 rounded-xl p-4 mt-2">
+//                       <p className="text-[12px] text-gray-500 leading-relaxed">
+//                         This Transaction Covers Initial Core Paper Stock Orders Mapped To Office Administration Expenses. Balance Reconciled Directly With Account Manager.
+//                       </p>
+//                     </div>
+//                   </div>
+
+//                   {/* Totals Summary Box */}
+//                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+//                     <div className="space-y-4 pt-1">
+//                       <div className="flex justify-between items-center">
+//                         <span className="text-[12px] font-medium text-gray-500">Sub Total</span>
+//                         <span className="text-[13px] font-medium text-[#1a233a]">₹5,000.00</span>
+//                       </div>
+//                       <div className="flex justify-between items-center">
+//                         <span className="text-[12px] font-medium text-gray-500">Discount</span>
+//                         <span className="text-[13px] font-medium text-gray-500">(-) ₹0.00</span>
+//                       </div>
+//                       <div className="flex justify-between items-center">
+//                         <span className="text-[12px] font-medium text-gray-500">Tax Rate</span>
+//                         <span className="text-[13px] font-medium text-gray-500">(+) ₹0.00</span>
+//                       </div>
+//                       <div className="flex justify-between items-center pt-3 mt-1">
+//                         <span className="text-[14px] font-bold text-[#1a233a]">Total</span>
+//                         <span className="text-[16px] font-bold text-[#1a233a]">₹5,000.00</span>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 {/* Journal Section */}
+//                 <div className="mt-2 pt-2 border-t border-gray-100/60">
+//                   {/* Tabs */}
+//                   <div className="flex space-x-6 border-b border-gray-100 mb-2 px-2">
+//                     <div className="relative pb-1">
+//                       <button className="text-[12px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">
+//                         Journal
+//                       </button>
+//                       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]"></div>
+//                     </div>
+//                   </div>
+
+//                   <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+//                     {/* Banner */}
+//                     <div className="bg-gradient-to-r from-[#fbe3de] via-[#f0e8f7] to-[#e4e6f9] px-4 py-1.5 border-b border-gray-100">
+//                       <span className="text-[11px] text-gray-700">Amount Is Displayed In Your Base Currency <span className="font-bold text-[#1a233a]">INR</span></span>
+//                     </div>
+
+//                     <div className="p-0">
+//                       <div className="px-4 py-1.5 border-b border-gray-100 bg-white">
+//                         <h4 className="text-[13px] font-bold text-[#1a233a]">Expense</h4>
+//                       </div>
+                      
+//                       <table className="w-full text-left">
+//                         <thead className="border-b border-gray-100 bg-gray-50/50">
+//                           <tr>
+//                             <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">Account</th>
+//                             <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">Debit</th>
+//                             <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">Credit</th>
+//                           </tr>
+//                         </thead>
+//                         <tbody className="divide-y divide-gray-50">
+//                           <tr>
+//                             <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">Materials</td>
+//                             <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">4,67,254.00</td>
+//                             <td className="px-4 py-1.5 text-[11px] text-gray-400">0.00</td>
+//                           </tr>
+//                           <tr>
+//                             <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">Undeposited Funds</td>
+//                             <td className="px-4 py-1.5 text-[11px] text-gray-400">0.00</td>
+//                             <td className="px-4 py-1.5 text-[11px] text-gray-500 font-medium">4,67,254.00</td>
+//                           </tr>
+//                         </tbody>
+//                         <tfoot className="border-t border-gray-200 bg-gray-50/30">
+//                           <tr>
+//                             <td className="px-4 py-1.5 text-[12px] font-bold text-[#1a233a]">Total</td>
+//                             <td className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">4,67,254.00</td>
+//                             <td className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">4,67,254.00</td>
+//                           </tr>
+//                         </tfoot>
+//                       </table>
+//                     </div>
+//                   </div>
+//                 </div>
+
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </main>
+//   );
+// };
+
+// export default BillDetailPage;
+
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus,
+// ================================
+// IMPORT ICONS 
+// ==============================
+// These icons are provided by the lucide-react library.
+// They are used for buttons and different UI elements.
+
+import {
+  Plus,
   MoreHorizontal,
   Search,
   Edit,
@@ -9,13 +423,147 @@ import { Plus,
   Download,
   Check,
   HandCoins,
-  ArrowRightLeft, ChevronDown } from 'lucide-react';
+  ArrowRightLeft, ChevronDown
+} from 'lucide-react';
+
+// ============================================================
+//  BILL DETAIL PAGE COMPONENT
+// ============================================================
 
 const BillDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const tabs = ['Expenses', 'Procurement', 'Purchase Order', 'Bills', 'Payment'];
+  // ============================================================
+  // BILL DATA FROM BACKEND
+  // ============================================================
+
+  const [bill, setBill] = useState(null);
+
+  // All bills for the left sidebar
+  const [bills, setBills] = useState([]);
+
+  // Loading state
+  const [loading, setLoading] = useState(true);
+
+  // Error state
+  const [error, setError] = useState("");
+
+  const tabs = [
+    'Expenses',
+    'Procurement',
+    'Purchase Order',
+    'Bills',
+    'Payment'
+  ];
+
+  // ============================================================
+  // GET SINGLE BILL FROM EXISTING BACKEND
+  // ============================================================
+
+  useEffect(() => {
+
+    const fetchBill = async () => {
+
+      try {
+
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(
+          `http://localhost:3000/api/v1/purchase/bills/${id}`
+        );
+
+        const result = await response.json();
+
+        console.log("Bill Detail API:", result);
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Failed to fetch bill"
+          );
+        }
+
+        // Backend response:
+        // {
+        //   success: true,
+        //   message: "...",
+        //   data: {...}
+        // }
+
+        setBill(result.data);
+
+      } catch (err) {
+
+        console.error("Bill detail error:", err);
+
+        setError(
+          err.message || "Unable to load bill"
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+    // Don't call API for /new
+    if (id && id !== "new") {
+      fetchBill();
+    }
+
+  }, [id]);
+
+  // ============================================================
+  // GET ALL BILLS FOR LEFT SIDEBAR
+  // ============================================================
+
+  useEffect(() => {
+
+    const fetchAllBills = async () => {
+
+      try {
+
+        const response = await fetch(
+          "http://localhost:3000/api/v1/purchase/bills"
+        );
+
+        const result = await response.json();
+
+        console.log("All Bills API:", result);
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Failed to fetch bills"
+          );
+        }
+
+        setBills(
+          Array.isArray(result.data)
+            ? result.data
+            : []
+        );
+
+      } catch (err) {
+
+        console.error(
+          "All bills error:",
+          err
+        );
+
+      }
+
+    };
+
+    fetchAllBills();
+
+  }, []);
+
+  // ==========================================================
+  //  RETURN THE PAGE UI
+  // ==========================================================
 
   return (
     <main className="flex-1 overflow-hidden bg-[#f4f7fb] flex flex-col relative p-1.5 gap-1.5">
@@ -48,6 +596,7 @@ const BillDetailPage = () => {
           </h2>
 
           <div className="flex items-center gap-0">
+
             {/* Step 1: Procurement */}
             <div className="flex flex-col items-center flex-shrink-0 w-16 md:w-20">
               <div className="w-8 h-8 rounded-full bg-green-400 ring-2 ring-green-100 text-white flex items-center justify-center font-semibold mb-1 z-10 relative shadow-sm">
@@ -101,9 +650,9 @@ const BillDetailPage = () => {
             <div className="p-5 border-b border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-1 cursor-pointer">
-                <h3 className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">All Bills</h3>
-                <ChevronDown className="w-5 h-5 text-[#8b5cf6]" />
-              </div>
+                  <h3 className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">All Bills</h3>
+                  <ChevronDown className="w-5 h-5 text-[#8b5cf6]" />
+                </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => navigate('/purchase/bill/new')}
@@ -130,66 +679,111 @@ const BillDetailPage = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
-              {/* Active Card */}
-              <div className="bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md transition-all shadow-sm border border-transparent mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">BILL-00001</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">25/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  CENTURY PULP & PAPER
-                </h3>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
-                    OPEN
-                  </span>
-                  <span className="text-[14px] font-bold text-[#111827]">₹53,900.00</span>
-                </div>
-              </div>
 
-              {/* Inactive Card 1 */}
-              <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">BILL-00002</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">20/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  GLOBAL SUPPLIES INC
-                </h3>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
-                    OPEN
-                  </span>
-                  <span className="text-[14px] font-bold text-[#111827]">₹12,500.00</span>
-                </div>
-              </div>
+              {bills.map((item) => {
 
-              {/* Inactive Card 2 */}
-              <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">BILL-00003</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">15/06/2026</span>
+                const isActive =
+                  String(item.bill_id) === String(id);
+
+                return (
+
+                  <div
+                    key={item.bill_id}
+                    onClick={() =>
+                      navigate(
+                        `/purchase/bill/${item.bill_id}`
+                      )
+                    }
+                    className={`
+                                rounded-2xl px-3 py-2
+                                cursor-pointer
+                                transition-all
+                                shadow-sm
+                                border
+                                mb-2.5
+
+                               ${isActive
+                        ? "bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] border-transparent"
+                        : "bg-white border-gray-100 hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff]"
+                         }
+                      `}
+                  >
+
+                    {/* Bill number + date */}
+                    <div className="flex justify-between items-center mb-0.5">
+
+                      <span className="text-[12px] font-medium text-[#374151]">
+                        {item.bill_number}
+                      </span>
+
+                      <span className="text-[9px] text-gray-400 font-medium tracking-wide">
+                        {item.bill_date
+                          ? new Date(
+                            item.bill_date
+                          ).toLocaleDateString("en-GB")
+                          : "-"}
+                      </span>
+
+                    </div>
+
+
+                    {/* Vendor name */}
+                    <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+
+                      {item.vendor_name ||
+                        item.company_name ||
+                        item.vendor_code ||
+                        "Unknown Vendor"}
+
+                    </h3>
+
+
+                    {/* Status + amount */}
+                    <div className="flex justify-between items-end mt-1">
+
+                      <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
+
+                        OPEN
+
+                      </span>
+
+                      <span className="text-[14px] font-bold text-[#111827]">
+
+                        ₹
+                        {Number(
+                          item.total_amount || 0
+                        ).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2
+                        })}
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                );
+
+              })}
+
+
+              {/* No bills */}
+              {bills.length === 0 && (
+                <div className="text-center text-[12px] text-gray-400 py-6">
+                  No bills found
                 </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  TECHHARDWARE LTD
-                </h3>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="bg-[#f3f4f6] text-[#4b5563] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
-                    CLOSED
-                  </span>
-                  <span className="text-[14px] font-bold text-[#111827]">₹0.00</span>
-                </div>
-              </div>
+              )}
+
             </div>
           </div>
 
           {/* Right Main Content */}
-          <div className="flex-1 flex flex-col gap-1.5 overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col gap-1 overflow-hidden min-h-0">
             {/* Detail Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
-                  {id && id !== 'new' ? (isNaN(id) ? id : `BILL-${id.toString().padStart(5, '0')}`) : 'BILL-00001'}
+                  {bill?.bill_number || "-"}
                 </h2>
                 <span className="bg-[#ffe8e8] text-[#ff6b6b] text-[10px] font-bold px-2 py-0.5 rounded-full">
                   Unpaid
@@ -217,10 +811,11 @@ const BillDetailPage = () => {
 
             {/* Main Details Containers */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pb-2 pr-1">
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-4 min-h-full">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-2">
 
                 {/* Top Details Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  
                   {/* Customer Profile Box */}
                   <div className="bg-white border border-gray-100 rounded-xl shadow-sm flex flex-col">
                     <div className="px-4 pt-4 pb-2 mx-1 border-b border-gray-200">
@@ -229,21 +824,32 @@ const BillDetailPage = () => {
                     <div className="px-5 pt-4 pb-5 flex-1">
                       <div className="flex items-center mb-6">
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ff4d4d] to-[#9333ea] text-white flex items-center justify-center text-xs font-bold shadow-sm mr-3 flex-shrink-0">
-                          CC
+                          {(bill?.vendor_name || "VN")
+                            .substring(0, 2)
+                            .toUpperCase()}
                         </div>
                         <div>
-                          <h4 className="text-[13px] font-bold text-gray-900">CENTURY PULP & PAPER</h4>
-                          <p className="text-[10px] text-gray-400 mt-0.5 uppercase tracking-wide">BL- 00001</p>
+                          <h4 className="text-[13px] font-bold text-gray-900">
+                            {bill?.vendor_name || bill?.company_name || "Unknown Vendor"}
+                          </h4>
+
+                          <p className="text-[10px] text-gray-400 mt-0.5 uppercase tracking-wide">
+                            {bill?.vendor_code || "-"}
+                          </p>
                         </div>
                       </div>
                       <div className="space-y-2.5">
                         <div className="grid grid-cols-2">
                           <span className="text-[12px] font-medium text-gray-400">GSTIN</span>
-                          <span className="text-[12px] font-bold text-gray-900">29BGBBB2222B2Z2</span>
+                          <span className="text-[12px] font-bold text-gray-900">
+                            {bill?.gstin || "-"}
+                          </span>
                         </div>
                         <div className="grid grid-cols-2">
                           <span className="text-[12px] font-medium text-gray-400">Point Of Contact</span>
-                          <span className="text-[12px] font-bold text-gray-900">P. Verma</span>
+                          <span className="text-[12px] font-bold text-gray-900">
+                            {bill?.primary_contact || bill?.contact_name || "-"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -256,141 +862,285 @@ const BillDetailPage = () => {
                     </div>
                     <div className="px-5 pt-4 pb-5 flex-1">
                       <div className="space-y-2.5">
+
+                        {/* Order Number */}
                         <div className="grid grid-cols-2">
-                          <span className="text-[12px] font-medium text-gray-400">Order Number</span>
-                          <span className="text-[12px] font-bold text-gray-900">5453</span>
+                          <span className="text-[12px] font-medium text-gray-400">
+                            Order Number
+                          </span>
+
+                          <span className="text-[12px] font-bold text-gray-900">
+                            {bill?.purchase_order_id || "-"}
+                          </span>
                         </div>
+
+                        {/* Bill Date */}
                         <div className="grid grid-cols-2">
-                          <span className="text-[12px] font-medium text-gray-400">Bill Date</span>
-                          <span className="text-[12px] font-bold text-gray-900">15/07/2026</span>
+                          <span className="text-[12px] font-medium text-gray-400">
+                            Bill Date
+                          </span>
+
+                          <span className="text-[12px] font-bold text-gray-900">
+                            {bill?.bill_date
+                              ? new Date(bill.bill_date).toLocaleDateString("en-GB")
+                              : "-"}
+                          </span>
                         </div>
+
+                        {/* Due Date */}
                         <div className="grid grid-cols-2">
-                          <span className="text-[12px] font-medium text-gray-400">Due Date</span>
-                          <span className="text-[12px] font-bold text-gray-900">15/07/2026</span>
+                          <span className="text-[12px] font-medium text-gray-400">
+                            Due Date
+                          </span>
+
+                          <span className="text-[12px] font-bold text-gray-900">
+                            {bill?.due_date
+                              ? new Date(bill.due_date).toLocaleDateString("en-GB")
+                              : "-"}
+                          </span>
                         </div>
+
+                        {/* Payment Terms */}
                         <div className="grid grid-cols-2">
-                          <span className="text-[12px] font-medium text-gray-400">Payment Terms</span>
-                          <span className="text-[12px] font-bold text-gray-900">Due On Receipt</span>
+                          <span className="text-[12px] font-medium text-gray-400">
+                            Payment Terms
+                          </span>
+
+                          <span className="text-[12px] font-bold text-gray-900">
+                            {bill?.payment_terms || "-"}
+                          </span>
                         </div>
+
+                        {/* Balance Due */}
                         <div className="grid grid-cols-2">
-                          <span className="text-[12px] font-medium text-gray-400">Balance Due</span>
-                          <span className="text-[12px] font-bold text-gray-900">₹5,000.00</span>
+                          <span className="text-[12px] font-medium text-gray-400">
+                            Balance Due
+                          </span>
+
+                          <span className="text-[12px] font-bold text-gray-900">
+                            ₹
+                            {Number(bill?.total_amount || 0).toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
                         </div>
+
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Addresses Box */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col lg:flex-row mt-2">
-                  <div className="flex-1 px-5 py-4">
-                    <h5 className="text-[14px] font-medium text-gray-500 mb-2">Billing Address</h5>
-                    <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
-                      648/A, OM Chambers, Binnamangala 1st<br />
-                      Stage, Bengaluru, Karnataka 560038
+              {/* Addresses Box */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col lg:flex-row mt-1">
+                <div className="flex-1 px-5 py-4">
+                  <h5 className="text-[14px] font-medium text-gray-500 mb-2">Billing Address</h5>
+                  <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
+                    {bill?.billing_address || "No billing address available"}
+                  </p>
+                </div>
+
+                {/* Divider */}
+                <div className="w-auto mx-5 lg:mx-0 lg:w-[2px] h-[1px] lg:h-auto bg-pink-200/60 lg:my-4 rounded-full"></div>
+
+                <div className="flex-1 px-5 py-4">
+                  <h5 className="text-[14px] font-medium text-gray-500 mb-2">Shipping Address</h5>
+                  <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
+                    {bill?.shipping_address || "No shipping address available"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Grid for Notes and Totals */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+
+                {/* Notes & Terms Box */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                  <h5 className="text-[15px] font-bold text-[#1a233a] mb-3 pb-3 border-b border-gray-100">
+                    Internal Bill Notes / Reminders
+                  </h5>
+
+                  <div className="bg-white border border-blue-50 rounded-xl p-4 mt-2">
+                    <p className="text-[12px] text-gray-500 leading-relaxed">
+                      {bill?.remarks || "No remarks available."}
                     </p>
                   </div>
+                </div>
 
-                  {/* Divider */}
-                  <div className="w-auto mx-5 lg:mx-0 lg:w-[2px] h-[1px] lg:h-auto bg-pink-200/60 lg:my-4 rounded-full"></div>
 
-                  <div className="flex-1 px-5 py-4">
-                    <h5 className="text-[14px] font-medium text-gray-500 mb-2">Shipping Address</h5>
-                    <p className="text-[13px] text-[#1a233a] font-medium leading-relaxed">
-                      Warehouse No. 12,<br />
-                      KIADB Industrial Area, Whitefield, Bengaluru,<br />
-                      Karnataka 560066
-                    </p>
+                {/* Invoice Totals */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+
+                  <div className="space-y-4">
+
+                    {/* Sub Total */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-[12px] font-medium text-gray-500">
+                        Sub Total
+                      </span>
+
+                      <span className="text-[13px] font-medium text-[#1a233a]">
+                        ₹
+                        {Number(bill?.item_total || 0).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+
+
+                    {/* Discount */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-[12px] font-medium text-gray-500">
+                        Discount
+                      </span>
+
+                      <span className="text-[13px] font-medium text-gray-500">
+                        (-) ₹
+                        {Number(bill?.discount_amount || 0).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+
+
+                    {/* Tax */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-[12px] font-medium text-gray-500">
+                        Tax
+                      </span>
+
+                      <span className="text-[13px] font-medium text-gray-500">
+                        (+) ₹
+                        {Number(bill?.gst_amount || 0).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+
+
+                    {/* Total */}
+                    <div className="flex justify-between items-center pt-3 mt-1">
+                      <span className="text-[14px] font-bold text-[#1a233a]">
+                        Total
+                      </span>
+
+                      <span className="text-[16px] font-bold text-[#1a233a]">
+                        ₹
+                        {Number(bill?.total_amount || 0).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+              {/* Journal Section */}
+              <div className="mt-2 pt-2 border-t border-gray-100/60">
+
+                {/* Tabs */}
+                <div className="flex space-x-6 border-b border-gray-100 mb-2 px-2">
+                  <div className="relative pb-1">
+                    <button className="text-[12px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">
+                      Journal
+                    </button>
+
+                    <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]"></div>
                   </div>
                 </div>
 
-                {/* Grid for Notes and Totals */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                  {/* Notes & Terms Box */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <h5 className="text-[15px] font-bold text-[#1a233a] mb-3 pb-3 border-b border-gray-100">Internal Bill Notes / Reminders</h5>
-                    <div className="bg-white border border-blue-50 rounded-xl p-4 mt-2">
-                      <p className="text-[12px] text-gray-500 leading-relaxed">
-                        This Transaction Covers Initial Core Paper Stock Orders Mapped To Office Administration Expenses. Balance Reconciled Directly With Account Manager.
-                      </p>
-                    </div>
+                {/* Journal Card */}
+                <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+
+                  {/* Banner */}
+                  <div className="bg-gradient-to-r from-[#fbe3de] via-[#f0e8f7] to-[#e4e6f9] px-4 py-1.5 border-b border-gray-100">
+                    <span className="text-[11px] text-gray-700">
+                      Amount Is Displayed In Your Base Currency{" "}
+                      <span className="font-bold text-[#1a233a]">
+                        INR
+                      </span>
+                    </span>
                   </div>
 
-                  {/* Totals Summary Box */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <div className="space-y-4 pt-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[12px] font-medium text-gray-500">Sub Total</span>
-                        <span className="text-[13px] font-medium text-[#1a233a]">₹5,000.00</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[12px] font-medium text-gray-500">Discount</span>
-                        <span className="text-[13px] font-medium text-gray-500">(-) ₹0.00</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[12px] font-medium text-gray-500">Tax Rate</span>
-                        <span className="text-[13px] font-medium text-gray-500">(+) ₹0.00</span>
-                      </div>
-                      <div className="flex justify-between items-center pt-3 mt-1">
-                        <span className="text-[14px] font-bold text-[#1a233a]">Total</span>
-                        <span className="text-[16px] font-bold text-[#1a233a]">₹5,000.00</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  {/* Expense */}
+                  <div className="p-0">
 
-                {/* Journal Section */}
-                <div className="mt-2 pt-2 border-t border-gray-100/60">
-                  {/* Tabs */}
-                  <div className="flex space-x-6 border-b border-gray-100 mb-2 px-2">
-                    <div className="relative pb-1">
-                      <button className="text-[12px] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]">
-                        Journal
-                      </button>
-                      <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8]"></div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
-                    {/* Banner */}
-                    <div className="bg-gradient-to-r from-[#fbe3de] via-[#f0e8f7] to-[#e4e6f9] px-4 py-1.5 border-b border-gray-100">
-                      <span className="text-[11px] text-gray-700">Amount Is Displayed In Your Base Currency <span className="font-bold text-[#1a233a]">INR</span></span>
+                    <div className="px-4 py-1.5 border-b border-gray-100 bg-white">
+                      <h4 className="text-[13px] font-bold text-[#1a233a]">
+                        Expense
+                      </h4>
                     </div>
 
-                    <div className="p-0">
-                      <div className="px-4 py-1.5 border-b border-gray-100 bg-white">
-                        <h4 className="text-[13px] font-bold text-[#1a233a]">Expense</h4>
-                      </div>
-                      
-                      <table className="w-full text-left">
-                        <thead className="border-b border-gray-100 bg-gray-50/50">
-                          <tr>
-                            <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">Account</th>
-                            <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">Debit</th>
-                            <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">Credit</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          <tr>
-                            <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">Materials</td>
-                            <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">4,67,254.00</td>
-                            <td className="px-4 py-1.5 text-[11px] text-gray-400">0.00</td>
-                          </tr>
-                          <tr>
-                            <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">Undeposited Funds</td>
-                            <td className="px-4 py-1.5 text-[11px] text-gray-400">0.00</td>
-                            <td className="px-4 py-1.5 text-[11px] text-gray-500 font-medium">4,67,254.00</td>
-                          </tr>
-                        </tbody>
-                        <tfoot className="border-t border-gray-200 bg-gray-50/30">
-                          <tr>
-                            <td className="px-4 py-1.5 text-[12px] font-bold text-[#1a233a]">Total</td>
-                            <td className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">4,67,254.00</td>
-                            <td className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">4,67,254.00</td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
+                    <table className="w-full text-left">
+
+                      <thead className="border-b border-gray-100 bg-gray-50/50">
+                        <tr>
+                          <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">
+                            Account
+                          </th>
+
+                          <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">
+                            Debit
+                          </th>
+
+                          <th className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">
+                            Credit
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-gray-50">
+
+                        <tr>
+                          <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">
+                            Materials
+                          </td>
+
+                          <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">
+                            4,67,254.00
+                          </td>
+
+                          <td className="px-4 py-1.5 text-[11px] text-gray-400">
+                            0.00
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="px-4 py-1.5 text-[11px] font-medium text-[#1a233a]">
+                            Undeposited Funds
+                          </td>
+
+                          <td className="px-4 py-1.5 text-[11px] text-gray-400">
+                            0.00
+                          </td>
+
+                          <td className="px-4 py-1.5 text-[11px] text-gray-500 font-medium">
+                            4,67,254.00
+                          </td>
+                        </tr>
+
+                      </tbody>
+
+                      <tfoot className="border-t border-gray-200 bg-gray-50/30">
+                        <tr>
+                          <td className="px-4 py-1.5 text-[12px] font-bold text-[#1a233a]">
+                            Total
+                          </td>
+
+                          <td className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">
+                            4,67,254.00
+                          </td>
+
+                          <td className="px-4 py-1.5 text-[11px] font-bold text-[#1a233a]">
+                            4,67,254.00
+                          </td>
+                        </tr>
+                      </tfoot>
+
+                    </table>
+
                   </div>
                 </div>
 
