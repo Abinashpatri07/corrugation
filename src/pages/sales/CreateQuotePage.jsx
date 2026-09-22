@@ -19,6 +19,8 @@ const CreateQuotePage = () => {
 
   const [boxType, setBoxType] = useState('');
   const [printType, setPrintType] = useState('');
+  const [paperType, setPaperType] = useState('NS');
+  const [boxSize, setBoxSize] = useState('medium');
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -72,7 +74,7 @@ const CreateQuotePage = () => {
       const response = await fetch('http://localhost:3000/api/v1/quotes/calculate-board', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ length, width, height, qty: quantity, ply: plyType, topGsm: topPaperGsm, linerGsm: linerGsm, fluteGsm: fluteGsm })
+        body: JSON.stringify({ length, width, height, qty: quantity, ply: plyType, topGsm: topPaperGsm, linerGsm: linerGsm, fluteGsm: fluteGsm, paperType })
       });
       
       const data = await response.json();
@@ -164,7 +166,10 @@ const CreateQuotePage = () => {
             fluteGsm: Number(fluteGsm),
             boardSize: boardSize,
             boxWeight: parseFloat(boxWeight) || 0,
-            totalWeight: parseFloat(totalWeight) || 0
+            totalWeight: parseFloat(totalWeight) || 0,
+            boxType: boxType,
+            paperType: paperType,
+            boxSize: boxSize
           }
         ]
       };
@@ -385,25 +390,21 @@ const CreateQuotePage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Quote <span className="text-red-500">*</span></label>
-                <input type="text" defaultValue="" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
-              </div>
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+              <div className="md:col-span-2">
                 <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Reference# <span className="text-red-500">*</span></label>
                 <input type="text" placeholder="Optional Reference" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
               </div>
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Quote Date</label>
-                <input type="text" placeholder="DD/MM/YYYY" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
+                <input type="date" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
               </div>
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Expire Date</label>
-                <input type="text" placeholder="DD/MM/YYYY" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
+                <input type="date" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-3">
                 <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Sales Persons</label>
                 <div className="relative">
                   <select className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none bg-white">
@@ -412,7 +413,7 @@ const CreateQuotePage = () => {
                   <ChevronDown className="absolute right-4 top-3 w-4 h-4 text-[#1a233a] pointer-events-none" />
                 </div>
               </div>
-              <div className="md:col-span-2">
+              <div className="md:col-span-3">
                 <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Project Name</label>
                 <div className="relative">
                   <select className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none bg-white">
@@ -480,7 +481,8 @@ const CreateQuotePage = () => {
                     >
                       <option value="">Select Box Type</option>
                       <option value="Universal">Universal</option>
-                      <option value="Die Cut">Die Cut</option>
+                      <option value="Dye cut">Dye cut</option>
+                      <option value="Telescopic">Telescopic</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-[#1a233a] pointer-events-none" />
                   </div>
@@ -489,8 +491,10 @@ const CreateQuotePage = () => {
                 <div>
                   <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Paper <span className="text-red-500">*</span></label>
                   <div className="relative">
-                    <select className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none">
-                      <option>NS</option>
+                    <select value={paperType} onChange={(e) => setPaperType(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none">
+                      <option value="NS">NS</option>
+                      <option value="GYS">GYS</option>
+                      <option value="Duplex">Duplex</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-[#1a233a] pointer-events-none" />
                   </div>
@@ -498,8 +502,10 @@ const CreateQuotePage = () => {
                 <div>
                   <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box Size <span className="text-red-500">*</span></label>
                   <div className="relative">
-                    <select className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none">
-                      <option>Medium</option>
+                    <select value={boxSize} onChange={(e) => setBoxSize(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none">
+                      <option value="small">small</option>
+                      <option value="medium">medium</option>
+                      <option value="large">large</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-[#1a233a] pointer-events-none" />
                   </div>

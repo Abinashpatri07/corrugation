@@ -442,6 +442,10 @@ const PurchaseOrderDetailPage = () => {
   const [purchaseOrder, setPurchaseOrder] = useState(null);
   const [vendorDetails, setVendorDetails] = useState(null);
 
+  // List of all purchase orders
+  const [purchaseOrdersList, setPurchaseOrdersList] = useState([]);
+  const [loadingList, setLoadingList] = useState(true);
+
   // Used to show loading message while API request is running.
   const [loading, setLoading] = useState(true);
 
@@ -452,6 +456,31 @@ const PurchaseOrderDetailPage = () => {
   const tabs = ['Expenses', 'Procurement', 'Purchase Order', 'Bills', 'Payment'];
 
 
+
+  // ============================================================
+  // GET ALL PURCHASE ORDERS
+  // ============================================================
+  useEffect(() => {
+    const fetchPurchaseOrdersList = async () => {
+      try {
+        setLoadingList(true);
+        const response = await fetch('http://localhost:3000/api/v1/purchase-orders');
+        
+        if (!response.ok) {
+           throw new Error('Failed to fetch purchase orders list');
+        }
+
+        const result = await response.json();
+        setPurchaseOrdersList(result.data || []);
+      } catch (err) {
+        console.error('Purchase Orders List Error:', err);
+      } finally {
+        setLoadingList(false);
+      }
+    };
+    
+    fetchPurchaseOrdersList();
+  }, []);
 
   // ============================================================
   // GET/FETCH PURCHASE ORDER DETAILS
@@ -936,56 +965,45 @@ const PurchaseOrderDetailPage = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
-              {/* Active Card */}
-              <div className="bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md transition-all shadow-sm border border-transparent mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">PO-00001</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">25/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  CENTURY PULP & PAPER
-                </h3>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
-                    OPEN
-                  </span>
-                  <span className="text-[14px] font-bold text-[#111827]">₹53,900.00</span>
-                </div>
-              </div>
-
-              {/* Inactive Card 1 */}
-              <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">PO-00002</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">20/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  GLOBAL SUPPLIES INC
-                </h3>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
-                    OPEN
-                  </span>
-                  <span className="text-[14px] font-bold text-[#111827]">₹12,500.00</span>
-                </div>
-              </div>
-
-              {/* Inactive Card 2 */}
-              <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-medium text-[#374151]">PO-00003</span>
-                  <span className="text-[9px] text-gray-400 font-medium tracking-wide">15/06/2026</span>
-                </div>
-                <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-                  TECHHARDWARE LTD
-                </h3>
-                <div className="flex justify-between items-end mt-1">
-                  <span className="bg-[#f3f4f6] text-[#4b5563] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none">
-                    CLOSED
-                  </span>
-                  <span className="text-[14px] font-bold text-[#111827]">₹0.00</span>
-                </div>
-              </div>
+              {loadingList ? (
+                <div className="text-center text-xs text-gray-500 py-4">Loading list...</div>
+              ) : purchaseOrdersList.length === 0 ? (
+                <div className="text-center text-xs text-gray-500 py-4">No purchase orders found.</div>
+              ) : (
+                purchaseOrdersList.map((po) => {
+                  const isActive = po.purchase_order_id.toString() === id;
+                  
+                  return (
+                    <div
+                      key={po.purchase_order_id}
+                      onClick={() => navigate(`/purchase/order/${po.purchase_order_id}`)}
+                      className={
+                        isActive
+                          ? "bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] rounded-2xl px-3 py-2 cursor-pointer shadow-sm border border-transparent mb-2.5"
+                          : "bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5"
+                      }
+                    >
+                      <div className="flex justify-between items-center mb-0.5">
+                        <span className="text-[12px] font-medium text-[#374151]">{po.purchase_order_number || `PO-${po.purchase_order_id.toString().padStart(5, '0')}`}</span>
+                        <span className="text-[9px] text-gray-400 font-medium tracking-wide">{formatDate(po.po_date)}</span>
+                      </div>
+                      <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+                        {po.vendor_name || po.vendor_code || 'Vendor'}
+                      </h3>
+                      <div className="flex justify-between items-end mt-1">
+                        <span className={
+                          po.delivery_status === 'OPEN' || po.delivery_status === 'PENDING'
+                            ? "bg-[#dcfce7] text-[#16a34a] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none"
+                            : "bg-[#f3f4f6] text-[#4b5563] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider leading-none"
+                        }>
+                          {po.delivery_status || 'OPEN'}
+                        </span>
+                        <span className="text-[14px] font-bold text-[#111827]">₹{formatAmount(po.estimated_total)}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
