@@ -1,12 +1,82 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Plus, MoreHorizontal, Mail, ExternalLink, ChevronUp, ChevronDown, Edit, X, Calendar, Download } from 'lucide-react';
+import {
+  getVendorDetails,
+  getVendorCommercialTerms,
+  getVendorReelSpecifications,
+  getVendorOrderHistory
+} from '../../services/vendorDetailsApi';
+import { getVendors } from '../../services/vendorlistApi';
+
 
 const VendorDetailsPage = () => {
+  const { id: vendorId } = useParams();
   const navigate = useNavigate();
   const [addressExpanded, setAddressExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview');
   const [selectedBox, setSelectedBox] = useState(null);
+  
+  // State
+  const [vendorList, setVendorList] = useState([]);
+  const [vendor, setVendor] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [addresses, setAddresses] = useState({ billing: null, shipping: null });
+  const [contacts, setContacts] = useState([]);
+  const [banks, setBanks] = useState([]);
+  const [commercialTerms, setCommercialTerms] = useState(null);
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [reelSpecs, setReelSpecs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchVendorList();
+  }, []);
+
+  useEffect(() => {
+    if (vendorId) {
+      fetchVendorData(vendorId);
+    }
+  }, [vendorId]);
+
+  const fetchVendorList = async () => {
+    try {
+      const res = await getVendors({ limit: 50 });
+      setVendorList(res.data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchVendorData = async (id) => {
+    try {
+      setLoading(true);
+      const details = await getVendorDetails(id);
+      setVendor(details.data.vendor);
+      setSummary(details.data.summary);
+      setAddresses(details.data.addresses);
+      setContacts(details.data.contacts || []);
+      setBanks(details.data.banks || []);
+
+      const terms = await getVendorCommercialTerms(id);
+      setCommercialTerms(terms.data || {});
+
+      const orders = await getVendorOrderHistory(id);
+      setOrderHistory(orders.data || []);
+
+      const specs = await getVendorReelSpecifications(id);
+      setReelSpecs(specs.data || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !vendor) {
+    return <div className="p-8 text-center text-gray-500">Loading vendor details...</div>;
+  }
+
 
   return (
     <div className="flex h-full bg-[#f4f7f9] p-1.5 gap-1.5 overflow-hidden">
@@ -43,47 +113,27 @@ const VendorDetailsPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 pb-3 hide-scrollbar">
-          {/* Vendor List Item (Active) */}
-          <div className="bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md transition-all shadow-sm border border-transparent mb-2.5">
-            <div className="flex justify-between items-center mb-0.5">
-              <span className="text-[12px] font-medium text-[#374151]">VEND-00287</span>
-              <span className="text-[9px] text-gray-400 font-medium tracking-wide">25/06/2026</span>
+          {vendorList.map(v => (
+            <div 
+              key={v.vendorId || v.id}
+              onClick={() => navigate(`/vendors/${v.vendorId || v.id}`)}
+              className={`rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md transition-all shadow-sm border mb-2.5 ${
+                String(v.vendorId || v.id) === String(vendorId) 
+                ? 'bg-gradient-to-br from-[#ffede1] via-[#fae8f8] to-[#efdfff] border-transparent'
+                : 'bg-white hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent border-gray-100'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="text-[12px] font-medium text-[#374151]">{v.vendorCode || v.vendor_code || 'VEND-0000'}</span>
+              </div>
+              <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
+                {v.displayName || v.display_name || v.name}
+              </h3>
+              <div className="text-right">
+                <span className="text-[14px] font-bold text-[#111827]">₹{v.payable || v.opening_balance || '0.00'}</span>
+              </div>
             </div>
-            <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-              Century Pulp & Paper
-            </h3>
-            <div className="text-right">
-              <span className="text-[14px] font-bold text-[#111827]">₹45,000.00</span>
-            </div>
-          </div>
-
-          {/* Vendor List Item 2 (Inactive) */}
-          <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-            <div className="flex justify-between items-center mb-0.5">
-              <span className="text-[12px] font-medium text-[#374151]">VEND-00288</span>
-              <span className="text-[9px] text-gray-400 font-medium tracking-wide">20/06/2026</span>
-            </div>
-            <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-              Global Supplies Inc
-            </h3>
-            <div className="text-right">
-              <span className="text-[14px] font-bold text-[#111827]">₹12,500.00</span>
-            </div>
-          </div>
-
-          {/* Vendor List Item 3 (Inactive) */}
-          <div className="bg-white rounded-2xl px-3 py-2 cursor-pointer hover:shadow-md hover:bg-gradient-to-br hover:from-[#ffede1] hover:via-[#fae8f8] hover:to-[#efdfff] hover:border-transparent transition-all shadow-sm border border-gray-100 mb-2.5">
-            <div className="flex justify-between items-center mb-0.5">
-              <span className="text-[12px] font-medium text-[#374151]">VEND-00289</span>
-              <span className="text-[9px] text-gray-400 font-medium tracking-wide">15/06/2026</span>
-            </div>
-            <h3 className="text-[11px] font-bold text-[#111827] mb-1 uppercase leading-snug truncate">
-              TechHardware Ltd
-            </h3>
-            <div className="text-right">
-              <span className="text-[14px] font-bold text-[#111827]">₹0.00</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -98,19 +148,19 @@ const VendorDetailsPage = () => {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-5">
                 <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#ff3b30] to-[#b82db8] flex items-center justify-center text-white text-[18px] font-bold shadow-sm shrink-0">
-                  CP
+                  {vendor.displayName ? vendor.displayName.substring(0, 2).toUpperCase() : 'V'}
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
-                    <h1 className="text-[18px] font-bold text-[#1a233a]">Century Pulp & Paper</h1>
-                    <span className="text-[12px] text-gray-400 font-medium">VEND-00287</span>
+                    <h1 className="text-[18px] font-bold text-[#1a233a]">{vendor.displayName}</h1>
+                    <span className="text-[12px] text-gray-400 font-medium">{vendor.vendorCode}</span>
                   </div>
                   <div className="text-[11.5px] text-gray-500 mt-1 font-medium">
-                    Paper Mill · Kraft Liner & Fluting Medium · Vendor Since 08-Jan-2021 · Owner: P. Verma (Purchase)
+                    {vendor.vendorType} · {vendor.companyName} · Owner: {vendor.primaryContactFirstName} {vendor.primaryContactLastName}
                   </div>
                 </div>
               </div>
-              <span className="px-3 py-1 bg-[#e0f2fe] text-[#0284c7] text-[11px] font-bold rounded-full">Approved</span>
+              <span className="px-3 py-1 bg-[#e0f2fe] text-[#0284c7] text-[11px] font-bold rounded-full">{vendor.status || 'Active'}</span>
             </div>
 
             {/* Divider */}
@@ -120,32 +170,22 @@ const VendorDetailsPage = () => {
             <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
               <div className="bg-[#f8fafc] rounded-[10px] p-3 min-w-[120px] border border-gray-100 flex-1">
                 <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">Total Purchase Value</div>
-                <div className="text-[18px] font-bold text-[#1a233a]">₹8.94 <span className="text-[11px] font-bold text-gray-500">Cr</span></div>
-                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Since Mar 2021</div>
+                <div className="text-[18px] font-bold text-[#1a233a]">₹{summary?.lifetimeValue || '0'}</div>
+                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Lifetime</div>
               </div>
               <div className="bg-[#f8fafc] rounded-[10px] p-3 min-w-[120px] border border-gray-100 flex-1">
-                <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">Within Terms</div>
-                <div className="text-[18px] font-bold text-[#1a233a]">₹32.6 <span className="text-[11px] font-bold text-gray-500">L</span></div>
-                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Within Terms</div>
+                <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">Lifetime Orders</div>
+                <div className="text-[18px] font-bold text-[#1a233a]">{summary?.lifetimeOrders || '0'}</div>
+                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Total count</div>
               </div>
               <div className="bg-[#f8fafc] rounded-[10px] p-3 min-w-[120px] border border-gray-100 flex-1">
-                <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">Payment Terms</div>
-                <div className="text-[18px] font-bold text-[#1a233a]">30 <span className="text-[11px] font-bold text-gray-500">Days</span></div>
-                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Post GRN</div>
-              </div>
-              <div className="bg-[#f8fafc] rounded-[10px] p-3 min-w-[120px] border border-gray-100 flex-1">
-                <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">On-Time Delivery</div>
-                <div className="text-[18px] font-bold text-[#16a34a]">96.2%</div>
-                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Last 12 Months</div>
-              </div>
-              <div className="bg-[#f8fafc] rounded-[10px] p-3 min-w-[120px] border border-gray-100 flex-1">
-                <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">QC Rejection Rate</div>
-                <div className="text-[18px] font-bold text-[#1a233a]">0.8%</div>
-                <div className="text-[9.5px] text-gray-400 mt-1 font-medium truncate">Inward Inspection</div>
+                <div className="text-[10px] text-gray-500 font-semibold mb-1 truncate">Outstanding Balance</div>
+                <div className="text-[18px] font-bold text-[#1a233a]">₹{summary?.outstandingBalance || '0.00'}</div>
               </div>
             </div>
           </div>
         </div>
+
 
         {/* Bottom Content Card */}
         <div className="bg-white flex-1 flex flex-col overflow-hidden border border-gray-100 rounded-[20px] shadow-sm">
@@ -190,35 +230,57 @@ const VendorDetailsPage = () => {
                   {/* Vendor Profile Card */}
                   <div className="bg-white rounded-[12px] border border-gray-100 shadow-sm p-5 relative">
                     <div className="border-b border-gray-100 pb-3 mb-4">
-                      <h3 className="text-[16px] font-medium text-[#1a233a]">Customer Profile</h3>
+                      <h3 className="text-[16px] font-medium text-[#1a233a]">Vendor Profile</h3>
                     </div>
 
                     <div className="flex items-center gap-4 mb-5">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff3b30] to-[#b82db8] flex items-center justify-center text-white text-[15px] font-bold shadow-sm shrink-0">
-                        CP
+                        {vendor.displayName ? vendor.displayName.substring(0, 2).toUpperCase() : 'V'}
                       </div>
                       <div>
-                        <h4 className="text-[14px] font-bold text-[#1a233a] leading-tight">Century Pulp & Paper</h4>
-                        <span className="text-[11px] text-gray-400 font-medium">VEND- 00001</span>
+                        <h4 className="text-[14px] font-bold text-[#1a233a] leading-tight">{vendor.companyName}</h4>
+                        <span className="text-[11px] text-gray-400 font-medium">{vendor.vendorCode}</span>
                       </div>
                     </div>
 
                     <div className="space-y-2.5">
                       <div className="grid grid-cols-[120px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">Vendor Type</span>
-                        <span className="font-bold text-[#1a233a]">Key Accounts</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.vendorType || '-'}</span>
                       </div>
                       <div className="grid grid-cols-[120px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">PAN</span>
-                        <span className="font-bold text-[#1a233a]">AABCC1235H</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.pan || '-'}</span>
                       </div>
                       <div className="grid grid-cols-[120px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">GSTIN</span>
-                        <span className="font-bold text-[#1a233a]">29BGBBB2222B2Z2</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.gstin || '-'}</span>
                       </div>
                       <div className="grid grid-cols-[120px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">MSME Register</span>
-                        <span className="font-bold text-[#1a233a]">No</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.msme || '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Details Card */}
+                  <div className="bg-white rounded-[12px] border border-gray-100 shadow-sm p-5 relative">
+                    <div className="border-b border-gray-100 pb-3 mb-4">
+                      <h3 className="text-[16px] font-medium text-[#1a233a]">Payment Details</h3>
+                    </div>
+
+                    <div className="space-y-3 mt-[44px]">
+                      <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
+                        <span className="text-gray-400 font-medium">Currency</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.currencyCode || '-'}</span>
+                      </div>
+                      <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
+                        <span className="text-gray-400 font-medium">Opening Balance</span>
+                        <span className="font-bold text-[#1a233a]">₹{vendor.openingBalance || '0.00'}</span>
+                      </div>
+                      <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
+                        <span className="text-gray-400 font-medium">Payment Terms</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.paymentTermsId || '-'}</span>
                       </div>
                     </div>
                   </div>
@@ -247,66 +309,63 @@ const VendorDetailsPage = () => {
 
                 </div>
 
-                {/* ── Addresses Card ── */}
                 <div className="bg-white rounded-[12px] border border-blue-50 shadow-sm p-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 relative gap-0">
-                    {/* Left: Billing Address */}
                     <div className="pr-6 border-r-2 border-pink-300">
                       <div className="flex justify-between items-center mb-2">
                         <h3 className="text-[14px] font-bold text-gray-500">Billing Address</h3>
                       </div>
                       <div className="text-[12px] font-bold text-[#4b5563] leading-snug">
-                        Century Pulp & Paper Mill<br />
-                        Gate No. 2, Administrative Office Lalkuan Industrial Area<br />
-                        Lalkuan Nainital District Uttarakhand 43552
+                        {addresses?.billing?.attention && <>{addresses.billing.attention}<br/></>}
+                        {addresses?.billing?.street1 && <>{addresses.billing.street1}<br/></>}
+                        {addresses?.billing?.street2 && <>{addresses.billing.street2}<br/></>}
+                        {addresses?.billing?.city && <>{addresses.billing.city}, {addresses.billing.state} {addresses.billing.zipCode}</>}
+                        {!addresses?.billing && 'No billing address provided.'}
                       </div>
                     </div>
 
-                    {/* Right: Shipping Address */}
                     <div className="pl-6">
                       <div className="flex justify-between items-center mb-2">
                         <h3 className="text-[14px] font-bold text-gray-500">Shipping Address</h3>
                       </div>
                       <div className="text-[12px] font-bold text-[#4b5563] leading-snug">
-                        Century Pulp & Paper Mill<br />
-                        Century House, Lalkuan Industrial Complex<br />
-                        NH-109, Lalkuan Nainital District<br />
-                        Uttarakhand 262402
+                        {addresses?.shipping?.attention && <>{addresses.shipping.attention}<br/></>}
+                        {addresses?.shipping?.street1 && <>{addresses.shipping.street1}<br/></>}
+                        {addresses?.shipping?.street2 && <>{addresses.shipping.street2}<br/></>}
+                        {addresses?.shipping?.city && <>{addresses.shipping.city}, {addresses.shipping.state} {addresses.shipping.zipCode}</>}
+                        {!addresses?.shipping && 'No shipping address provided.'}
                       </div>
                     </div>
                   </div>
                 </div>
-
                 </div>
-              </div>
+                </div>
 
-                {/* Contacts Directory */}
+
                 <div className="bg-white rounded-[12px] border border-blue-50 shadow-sm p-5">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-[16px] font-bold text-[#1a233a]">Contacts Directory</h3>
                   </div>
                   <div className="flex flex-col divide-y divide-gray-100">
-                    {[1, 2, 3].map((item, idx) => (
+                    {contacts.length === 0 && <div className="text-gray-500 text-[13px] py-4">No contacts found.</div>}
+                    {contacts.map((contact, idx) => (
                       <div key={idx} className="flex items-center justify-between py-2.5 hover:bg-gray-50/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[12px] font-bold text-gray-600">
-                            SK
+                            {contact.name ? contact.name.substring(0, 2).toUpperCase() : 'C'}
                           </div>
                           <div>
-                            <div className="text-[13px] font-bold text-[#1a233a]">Suresh Kulkarni</div>
-                            <div className="text-[11px] text-gray-400 mt-0.5">Purchase Manager • Purchase</div>
+                            <div className="text-[13px] font-bold text-[#1a233a]">{contact.name}</div>
+                            <div className="text-[11px] text-gray-400 mt-0.5">{contact.designation || '-'}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1.5 text-gray-500 text-[10px] font-medium bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm">
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            +91 98220 44102
+                            {contact.mobileNumber || '-'}
                           </div>
                           <div className="flex items-center gap-1.5 text-gray-500 text-[10px] font-medium bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm">
                             <Mail className="w-3 h-3" />
-                            s.kulkarni@veenafoods.in
+                            {contact.emailAddress || '-'}
                           </div>
                         </div>
                       </div>
@@ -314,7 +373,6 @@ const VendorDetailsPage = () => {
                   </div>
                 </div>
 
-                {/* Bank Details */}
                 <div className="bg-white rounded-[12px] border border-blue-50 shadow-sm p-5">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-[16px] font-bold text-[#1a233a]">Bank Details</h3>
@@ -327,31 +385,20 @@ const VendorDetailsPage = () => {
                           <th className="pb-2 px-2">Account Holder Name</th>
                           <th className="pb-2 px-2">Account No</th>
                           <th className="pb-2 px-2">IFSC Code</th>
-                          <th className="pb-2 px-2">Open Date</th>
                         </tr>
                       </thead>
                       <tbody className="text-[#1a233a]">
-                        <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="py-2.5 px-2 font-medium">HDFC Bank</td>
-                          <td className="py-2.5 px-2 text-gray-600">Climamex Private Limited</td>
-                          <td className="py-2.5 px-2 font-medium">123456789012</td>
-                          <td className="py-2.5 px-2 text-gray-600">HDFC0000123</td>
-                          <td className="py-2.5 px-2 text-gray-600">01-Jul-2026</td>
-                        </tr>
-                        <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="py-2.5 px-2 font-medium">IDFC Bank</td>
-                          <td className="py-2.5 px-2 text-gray-600">Niman Private Limited</td>
-                          <td className="py-2.5 px-2 font-medium">123456789012</td>
-                          <td className="py-2.5 px-2 text-gray-600">IDFC0000223</td>
-                          <td className="py-2.5 px-2 text-gray-600">07-Jul-2026</td>
-                        </tr>
-                        <tr className="hover:bg-gray-50 transition-colors">
-                          <td className="py-2.5 px-2 font-medium">ICICI Bank</td>
-                          <td className="py-2.5 px-2 text-gray-600">Godrej Private Limited</td>
-                          <td className="py-2.5 px-2 font-medium">123456789012</td>
-                          <td className="py-2.5 px-2 text-gray-600">ICICI0000333</td>
-                          <td className="py-2.5 px-2 text-gray-600">12-Jul-2026</td>
-                        </tr>
+                        {banks.length === 0 && (
+                          <tr><td colSpan="4" className="py-4 text-center text-gray-500">No bank details found.</td></tr>
+                        )}
+                        {banks.map((bank, idx) => (
+                          <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td className="py-2.5 px-2 font-medium">{bank.bankName}</td>
+                            <td className="py-2.5 px-2 text-gray-600">{bank.accountHolderName || bank.accountHolder}</td>
+                            <td className="py-2.5 px-2 font-medium">{bank.accountNumber}</td>
+                            <td className="py-2.5 px-2 text-gray-600">{bank.ifscCode}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -363,98 +410,21 @@ const VendorDetailsPage = () => {
             {/* Tab Content - Commercial Terms */}
             {activeTab === 'Commercial Terms' && (
               <div className="space-y-3">
-
-                {/* Payment Terms */}
                 <div className="bg-white border border-blue-50 rounded-[12px] p-5 shadow-sm">
                   <h3 className="text-[16px] font-bold text-[#1a233a] mb-4">Payment Terms</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
                       <div className="text-[12px] text-gray-800 font-medium mb-1">Payment Terms</div>
-                      <div className="text-[16px] font-medium text-black">30 Days Post GRN</div>
+                      <div className="text-[16px] font-medium text-black">{vendor.paymentTermsId || '-'}</div>
                     </div>
                     <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">Advance Required</div>
-                      <div className="text-[16px] font-medium text-black">None</div>
+                      <div className="text-[12px] text-gray-800 font-medium mb-1">Currency</div>
+                      <div className="text-[16px] font-medium text-black">{vendor.currencyCode || '-'}</div>
                     </div>
                     <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">payable Outstanding</div>
-                      <div className="text-[16px] font-medium text-black">₹32,60,000</div>
+                      <div className="text-[12px] text-gray-800 font-medium mb-1">Payable Outstanding</div>
+                      <div className="text-[16px] font-medium text-black">₹{commercialTerms?.outstandingBalance || '0'}</div>
                     </div>
-                    <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">Overdue Status</div>
-                      <div>
-                        <span className="inline-flex px-2 py-0.5 bg-[#e0f5e7] text-[#16a34a] text-[11px] font-medium rounded-full mt-0.5">
-                          No Overdue
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rate Contract */}
-                <div className="bg-white border border-blue-50 rounded-[12px] p-5 shadow-sm">
-                  <h3 className="text-[16px] font-bold text-[#1a233a] mb-4">Rate Contract</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">Contract Reference</div>
-                      <div className="text-[16px] font-medium text-black">RC-CP-2026-Q3</div>
-                    </div>
-                    <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">Valid Till</div>
-                      <div className="text-[16px] font-medium text-black">30-Sep-2026</div>
-                    </div>
-                    <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">Price Basic</div>
-                      <div className="text-[16px] font-medium text-black">Per Kg, Ex-Mill</div>
-                    </div>
-                    <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
-                      <div className="text-[12px] text-gray-800 font-medium mb-1">Escalation Clause</div>
-                      <div className="text-[14px] font-medium text-black leading-snug">Quarterly review linked to pulp index</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recent Payment Activity */}
-                <div className="bg-white border border-blue-50 rounded-[12px] p-5 shadow-sm">
-                  <h3 className="text-[16px] font-bold text-[#1a233a] mb-5">Recent Payment Activity</h3>
-                  <div className="space-y-2.5">
-                    
-                    {/* Header Row */}
-                    <div className="grid grid-cols-4 items-center bg-white border border-gray-100 rounded-[8px] px-6 py-1.5 text-[12px] text-gray-400 font-medium">
-                      <div>Bill No.</div>
-                      <div>Amount</div>
-                      <div>Due Date</div>
-                      <div>Status</div>
-                    </div>
-
-                    {/* Data Rows */}
-                    <div className="grid grid-cols-4 items-center bg-white border border-gray-100 rounded-[8px] px-6 py-1.5 text-[12px] text-[#1a233a] font-medium hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer">
-                      <div>CP-BILL-4421</div>
-                      <div>₹6,20,000</div>
-                      <div>05-Aug-2026</div>
-                      <div>
-                        <span className="inline-flex px-3 py-1 bg-[#fbe8c7] text-[#92400e] text-[10px] font-medium rounded-full">Pending</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-4 items-center bg-white border border-gray-100 rounded-[8px] px-6 py-1.5 text-[12px] text-[#1a233a] font-medium hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer">
-                      <div>CP-BILL-4390</div>
-                      <div>₹4,10,000</div>
-                      <div>18-Jul-2026</div>
-                      <div>
-                        <span className="inline-flex px-3 py-1 bg-[#dcfce7] text-[#16a34a] text-[10px] font-medium rounded-full">Paid</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-4 items-center bg-white border border-gray-100 rounded-[8px] px-6 py-1.5 text-[12px] text-[#1a233a] font-medium hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer">
-                      <div>CP-BILL-6490</div>
-                      <div>₹8,10,000</div>
-                      <div>02-Jul-2026</div>
-                      <div>
-                        <span className="inline-flex px-3 py-1 bg-[#dcfce7] text-[#16a34a] text-[10px] font-medium rounded-full">Paid</span>
-                      </div>
-                    </div>
-
                   </div>
                 </div>
               </div>
