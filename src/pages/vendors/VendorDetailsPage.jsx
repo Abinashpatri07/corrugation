@@ -49,28 +49,41 @@ const VendorDetailsPage = () => {
   };
 
   const fetchVendorData = async (id) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
       const details = await getVendorDetails(id);
       setVendor(details.data.vendor);
       setSummary(details.data.summary);
-      setAddresses(details.data.addresses);
+      setAddresses(details.data.addresses || { billing: null, shipping: null });
       setContacts(details.data.contacts || []);
       setBanks(details.data.banks || []);
+    } catch (e) {
+      console.error('Failed to fetch details:', e);
+    }
 
+    try {
       const terms = await getVendorCommercialTerms(id);
       setCommercialTerms(terms.data || {});
+    } catch (e) {
+      console.error('Failed to fetch terms:', e);
+    }
 
+    try {
       const orders = await getVendorOrderHistory(id);
       setOrderHistory(orders.data || []);
+    } catch (e) {
+      console.error('Failed to fetch orders:', e);
+    }
 
+    try {
       const specs = await getVendorReelSpecifications(id);
       setReelSpecs(specs.data || []);
     } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch specs:', e);
     }
+
+    setLoading(false);
   };
 
   if (loading || !vendor) {
@@ -272,7 +285,7 @@ const VendorDetailsPage = () => {
                     <div className="space-y-3 mt-[44px]">
                       <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">Currency</span>
-                        <span className="font-bold text-[#1a233a]">{vendor.currencyCode || '-'}</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.currencyCode || 'INR - Indian Rupee'}</span>
                       </div>
                       <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">Opening Balance</span>
@@ -280,29 +293,7 @@ const VendorDetailsPage = () => {
                       </div>
                       <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
                         <span className="text-gray-400 font-medium">Payment Terms</span>
-                        <span className="font-bold text-[#1a233a]">{vendor.paymentTermsId || '-'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Payment Details Card */}
-                  <div className="bg-white rounded-[12px] border border-gray-100 shadow-sm p-5 relative">
-                    <div className="border-b border-gray-100 pb-3 mb-4">
-                      <h3 className="text-[16px] font-medium text-[#1a233a]">Payment Details</h3>
-                    </div>
-
-                    <div className="space-y-3 mt-[44px]">
-                      <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
-                        <span className="text-gray-400 font-medium">Currency</span>
-                        <span className="font-bold text-[#1a233a]">INR - Indian Rupee</span>
-                      </div>
-                      <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
-                        <span className="text-gray-400 font-medium">Opening Balance</span>
-                        <span className="font-bold text-[#1a233a]">₹0.00</span>
-                      </div>
-                      <div className="grid grid-cols-[140px_1fr] items-center text-[13px]">
-                        <span className="text-gray-400 font-medium">Payment Terms</span>
-                        <span className="font-bold text-[#1a233a]">Net 30</span>
+                        <span className="font-bold text-[#1a233a]">{vendor.paymentTermsId || 'Net 30'}</span>
                       </div>
                     </div>
                   </div>
@@ -348,28 +339,30 @@ const VendorDetailsPage = () => {
                   </div>
                   <div className="flex flex-col divide-y divide-gray-100">
                     {contacts.length === 0 && <div className="text-gray-500 text-[13px] py-4">No contacts found.</div>}
-                    {contacts.map((contact, idx) => (
+                    {contacts.map((contact, idx) => {
+                      const contactName = contact.name || (contact.firstName ? `${contact.firstName} ${contact.lastName || ''}`.trim() : null) || 'Unknown Contact';
+                      return (
                       <div key={idx} className="flex items-center justify-between py-2.5 hover:bg-gray-50/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[12px] font-bold text-gray-600">
-                            {contact.name ? contact.name.substring(0, 2).toUpperCase() : 'C'}
+                            {contactName !== 'Unknown Contact' ? contactName.substring(0, 2).toUpperCase() : 'C'}
                           </div>
                           <div>
-                            <div className="text-[13px] font-bold text-[#1a233a]">{contact.name}</div>
-                            <div className="text-[11px] text-gray-400 mt-0.5">{contact.designation || '-'}</div>
+                            <div className="text-[13px] font-bold text-[#1a233a]">{contactName}</div>
+                            <div className="text-[11px] text-gray-400 mt-0.5">{contact.designation || contact.department || '-'}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1.5 text-gray-500 text-[10px] font-medium bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm">
-                            {contact.mobileNumber || '-'}
+                            {contact.mobileNumber || contact.phone || contact.mobile || '-'}
                           </div>
                           <div className="flex items-center gap-1.5 text-gray-500 text-[10px] font-medium bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm">
                             <Mail className="w-3 h-3" />
-                            {contact.emailAddress || '-'}
+                            {contact.emailAddress || contact.email || '-'}
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
 
@@ -415,15 +408,15 @@ const VendorDetailsPage = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
                       <div className="text-[12px] text-gray-800 font-medium mb-1">Payment Terms</div>
-                      <div className="text-[16px] font-medium text-black">{vendor.paymentTermsId || '-'}</div>
+                      <div className="text-[16px] font-medium text-black">{vendor?.paymentTermsId || commercialTerms?.paymentTerms || 'Net 30'}</div>
                     </div>
                     <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
                       <div className="text-[12px] text-gray-800 font-medium mb-1">Currency</div>
-                      <div className="text-[16px] font-medium text-black">{vendor.currencyCode || '-'}</div>
+                      <div className="text-[16px] font-medium text-black">{vendor?.currencyCode || commercialTerms?.currency || 'INR - Indian Rupee'}</div>
                     </div>
                     <div className="bg-[#f7fbff] border border-blue-100 rounded-[8px] p-4 flex flex-col justify-center">
                       <div className="text-[12px] text-gray-800 font-medium mb-1">Payable Outstanding</div>
-                      <div className="text-[16px] font-medium text-black">₹{commercialTerms?.outstandingBalance || '0'}</div>
+                      <div className="text-[16px] font-medium text-black">₹{vendor?.openingBalance || commercialTerms?.outstandingBalance || '0.00'}</div>
                     </div>
                   </div>
                 </div>

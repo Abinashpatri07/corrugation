@@ -473,7 +473,7 @@ const CreateVendorPage = () => {
                     <div className="space-y-5 min-w-0 md:pr-4">
                       <div className="flex items-center min-w-0">
                         <label className="text-[13px] font-bold text-[#1a233a] w-36 shrink-0">
-                          Sales Region <span className="text-red-500">*</span>
+                          Region <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1 relative">
                           <select

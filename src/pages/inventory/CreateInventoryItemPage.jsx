@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Upload, Package, FileText, ShoppingCart, Box, List, Bookmark } from 'lucide-react';
 
 const CreateInventoryItemPage = () => {
   const navigate = useNavigate();
+  const [showPurchaseInfo, setShowPurchaseInfo] = useState(true);
+  const [showSalesInfo, setShowSalesInfo] = useState(true);
   
   const tabs = [
     { name: 'Items', path: '/inventory', active: true },
@@ -107,6 +109,12 @@ const CreateInventoryItemPage = () => {
                       <div className="relative">
                         <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500">
                           <option>Select Category</option>
+                          <option>Reel</option>
+                          <option>Glue</option>
+                          <option>Paper</option>
+                          <option>2 Ply</option>
+                          <option>Board</option>
+                          <option>Box</option>
                         </select>
                         <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
@@ -235,60 +243,130 @@ const CreateInventoryItemPage = () => {
               </div>
             </div>
 
-            {/* Purchase Information */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-gray-100 flex items-center gap-3">
+            {/* Purchase & Sales Information Combined */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-1">
+              
+              {/* Purchase Information Header */}
+              <div className={`p-5 flex items-center gap-3 ${showPurchaseInfo ? 'border-b border-gray-100' : ''}`}>
+                <div 
+                  onClick={() => setShowPurchaseInfo(!showPurchaseInfo)}
+                  className={`w-[22px] h-[22px] flex items-center justify-center rounded-full cursor-pointer transition-all ${
+                    showPurchaseInfo 
+                      ? 'bg-gradient-to-br from-[#f64f59] to-[#c471ed] shadow-sm' 
+                      : 'border-2 border-gray-300 bg-gray-50'
+                  }`}
+                >
+                  {showPurchaseInfo && <div className="w-[10px] h-[10px] bg-white rounded-full"></div>}
+                </div>
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f64f59] to-[#c471ed] flex items-center justify-center text-white shadow-sm">
                   <ShoppingCart className="w-4 h-4" />
                 </div>
                 <h3 className="text-[16px] font-bold text-[#1a233a]">Purchase Information</h3>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      Cost Price <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex">
-                      <input type="text" className="w-full border border-r-0 border-gray-200 rounded-l-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
-                      <span className="bg-gray-50 border border-gray-200 rounded-r-md px-3 py-2 text-[12px] text-gray-500 font-medium">INR</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      Account <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
-                        <option></option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      Description
-                    </label>
-                    <textarea 
-                      className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white min-h-[80px] resize-y"
-                    ></textarea>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      Preferred Vendor
-                    </label>
-                    <div className="relative">
-                      <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
-                        <option></option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+              {showPurchaseInfo && (
+                <div className="p-6 border-b border-gray-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Cost Price <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex">
+                        <input type="text" className="w-full border border-r-0 border-gray-200 rounded-l-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        <span className="bg-gray-50 border border-gray-200 rounded-r-md px-3 py-2 text-[12px] text-gray-500 font-medium">INR</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Account <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
+                          <option></option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Description
+                      </label>
+                      <textarea 
+                        className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white min-h-[80px] resize-y"
+                      ></textarea>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Preferred Vendor
+                      </label>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
+                          <option></option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* Sales Information Header */}
+              <div className={`p-5 flex items-center gap-3 ${showSalesInfo ? 'border-b border-gray-100' : ''}`}>
+                <div 
+                  onClick={() => setShowSalesInfo(!showSalesInfo)}
+                  className={`w-[22px] h-[22px] flex items-center justify-center rounded-full cursor-pointer transition-all ${
+                    showSalesInfo 
+                      ? 'bg-gradient-to-br from-[#f64f59] to-[#c471ed] shadow-sm' 
+                      : 'border-2 border-gray-300 bg-gray-50'
+                  }`}
+                >
+                  {showSalesInfo && <div className="w-[10px] h-[10px] bg-white rounded-full"></div>}
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f64f59] to-[#c471ed] flex items-center justify-center text-white shadow-sm">
+                  <ShoppingCart className="w-4 h-4" />
+                </div>
+                <h3 className="text-[16px] font-bold text-[#1a233a]">Sales Information</h3>
               </div>
+
+              {showSalesInfo && (
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Selling Price <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex">
+                        <input type="text" className="w-full border border-r-0 border-gray-200 rounded-l-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        <span className="bg-gray-50 border border-gray-200 rounded-r-md px-3 py-2 text-[12px] text-gray-500 font-medium">INR</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Sales Account <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
+                          <option></option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
+                        Description
+                      </label>
+                      <textarea 
+                        className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white min-h-[80px] resize-y"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Track Inventory for this Item */}

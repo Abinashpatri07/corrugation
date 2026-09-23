@@ -156,6 +156,8 @@ const CreateQuotePage = () => {
         referenceNo: '', // Can be extracted if a state was added for this
         items: [
           {
+            itemName: itemName,
+            itemDescription: itemDescription,
             length: Number(length),
             width: Number(width),
             height: Number(height),

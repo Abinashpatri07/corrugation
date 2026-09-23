@@ -384,14 +384,18 @@ const CustomerDetailsPage = () => {
                     boxSpecifications.length === 0
                 ) {
 
-                    const result =
-                        await getCustomerBoxSpecifications(
-                            customerId
+                    try {
+                        const result = await getCustomerBoxSpecifications(customerId);
+                        // Filter out completely empty objects from API
+                        const data = (result.data || []).filter(item => 
+                            Object.keys(item).length > 0 && 
+                            (item.boxSpec || item.boxType || item.paperType || item.id)
                         );
-
-                    setBoxSpecifications(
-                        result.data || []
-                    );
+                        setBoxSpecifications(data);
+                    } catch (e) {
+                        console.error('Box spec API failed', e);
+                        setBoxSpecifications([]);
+                    }
                 }
 
 
@@ -422,10 +426,7 @@ const CustomerDetailsPage = () => {
                     err
                 );
 
-                setError(
-                    err.message ||
-                    'Failed to load tab data'
-                );
+                // Removed setError to avoid crashing the tab view if API fails
 
             } finally {
 
@@ -456,7 +457,6 @@ const CustomerDetailsPage = () => {
 
                 setLoadingTab(true);
 
-
                 const result =
                     await getCustomerOrderHistory(
                         customerId,
@@ -467,15 +467,14 @@ const CustomerDetailsPage = () => {
                         }
                     );
 
-
-                setOrderHistory(
-                    result.data || []
+                // Filter out completely empty objects from API
+                const data = (result.data || []).filter(item => 
+                    Object.keys(item).length > 0 && 
+                    (item.orderNumber || item.salesOrderId || item.id)
                 );
-
-
-                setOrderPagination(
-                    result.pagination || null
-                );
+                
+                setOrderHistory(data);
+                setOrderPagination(result.pagination || null);
 
             } catch (err) {
 
@@ -484,11 +483,8 @@ const CustomerDetailsPage = () => {
                     err
                 );
 
-
-                setError(
-                    err.message ||
-                    'Failed to load order history'
-                );
+                setOrderHistory([]);
+                setOrderPagination(null);
 
             } finally {
 
