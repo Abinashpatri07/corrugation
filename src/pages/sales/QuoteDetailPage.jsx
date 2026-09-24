@@ -382,7 +382,7 @@ const QuoteDetailPage = () => {
                         <p className="text-[10px] text-gray-500">Kraft, {activeQuote.boxLength}x{activeQuote.boxWidth}x{activeQuote.boxHeight}, 18 BF</p>
                       </div>
                       <div className="col-span-2 font-bold">{activeQuote.quantity} Box</div>
-                      <div className="col-span-2 font-bold">30.00</div>
+                      <div className="col-span-2 font-bold">{activeQuote.unitRate || "0.00"}</div>
                       <div className="col-span-2 text-right font-bold">{activeQuote.subTotal}</div>
                     </div>
                   </div>

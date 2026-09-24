@@ -46,6 +46,7 @@ const CreateQuotePage = () => {
   const [quantity, setQuantity] = useState('');
   const [plyType, setPlyType] = useState('3 Ply');
   const [boardSize, setBoardSize] = useState('');
+  const [boardFactor, setBoardFactor] = useState('');
   const [numberOfPaper, setNumberOfPaper] = useState('');
   const [numberOfTwoPly, setNumberOfTwoPly] = useState('');
   const [boxWeight, setBoxWeight] = useState('');
@@ -74,7 +75,7 @@ const CreateQuotePage = () => {
       const response = await fetch('http://localhost:3000/api/v1/quotes/calculate-board', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ length, width, height, qty: quantity, ply: plyType, topGsm: topPaperGsm, linerGsm: linerGsm, fluteGsm: fluteGsm, paperType })
+        body: JSON.stringify({ length, width, height, qty: quantity, ply: plyType, topGsm: topPaperGsm, linerGsm: linerGsm, fluteGsm: fluteGsm, paperType, topBf: topPaperBf, linerBf: linerBf, fluteBf: fluteBf })
       });
       
       const data = await response.json();
@@ -87,6 +88,7 @@ const CreateQuotePage = () => {
         const twoPly = data.data.twoPly;
         
         setBoardSize(`${l} x ${w}`);
+        setBoardFactor(data.data.boardFactor ? data.data.boardFactor.toString() : '');
         setNumberOfPaper(papers ? papers.toString() : '');
         setNumberOfTwoPly(twoPly ? twoPly.toString() : '');
         
@@ -639,8 +641,11 @@ const CreateQuotePage = () => {
                   <input type="text" value={boardSize} readOnly className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF (Board Factor)</label>
-                  <input type="text" defaultValue="" className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm" />
+                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF (Bursting Factor)</label>
+                  <div className="relative">
+                    <input type="text" value={boardFactor} readOnly className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm pr-12" />
+                    <span className="absolute right-3 top-2.5 text-[11px] text-gray-400 font-medium">kg/cm²</span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Number of Top Paper</label>
