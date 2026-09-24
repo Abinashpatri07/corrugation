@@ -23,6 +23,9 @@ import {
   HandCoins,
   ArrowRightLeft
 } from 'lucide-react';
+import { getPurchaseOrderById } from '../../services/purchaseOrderDetailsApi';
+import { getAllPurchaseOrders } from '../../services/purchaseOrderlistApi';
+import { getVendorById } from '../../services/vendorDetailsApi';
 
 const PurchaseOrderDetailPage = () => {
   const navigate = useNavigate();
@@ -59,13 +62,7 @@ const PurchaseOrderDetailPage = () => {
     const fetchPurchaseOrdersList = async () => {
       try {
         setLoadingList(true);
-        const response = await fetch('http://localhost:3000/api/v1/purchase-orders');
-        
-        if (!response.ok) {
-           throw new Error('Failed to fetch purchase orders list');
-        }
-
-        const result = await response.json();
+        const result = await getAllPurchaseOrders();
         setPurchaseOrdersList(result.data || []);
       } catch (err) {
         console.error('Purchase Orders List Error:', err);
@@ -93,20 +90,7 @@ const PurchaseOrderDetailPage = () => {
         setLoading(true);
         setError('');
 
-        // IMPORTANT:
-        // Change this URL ONLY if your backend route uses
-        // a different URL.
-        const response = await fetch(
-          `http://localhost:3000/api/v1/purchase-orders/${id}`
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch purchase order. Status: ${response.status}`
-          );
-        }
-
-        const result = await response.json();
+        const result = await getPurchaseOrderById(id);
 
         console.log('Purchase Order Detail API Response:', result);
 
@@ -138,32 +122,9 @@ const PurchaseOrderDetailPage = () => {
 
         if (vendorId) {
           try {
-            const vendorResponse = await fetch(
-              `http://localhost:3000/api/v1/vendors/${vendorId}`
-            );
-
-            if (!vendorResponse.ok) {
-              throw new Error(
-                `Failed to fetch vendor. Status: ${vendorResponse.status}`
-              );
-            }
-
-            const vendorResult = await vendorResponse.json();
+            const vendorResult = await getVendorById(vendorId);
 
             console.log('Vendor Details API Response:', vendorResult);
-
-            // Your vendor service returns:
-            //
-            // {
-            //   vendor: {...},
-            //   addresses: {
-            //     billing: {...},
-            //     shipping: {...}
-            //   },
-            //   contacts: [...],
-            //   banks: [...],
-            //   documents: [...]
-            // }
 
             const vendorData =
               vendorResult?.data ||

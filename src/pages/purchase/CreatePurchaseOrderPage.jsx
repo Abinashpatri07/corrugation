@@ -19,6 +19,9 @@ import {
   MapPin,
   Paperclip
 } from 'lucide-react';
+import { getVendors } from '../../services/vendorlistApi';
+import { getVendorById } from '../../services/vendorDetailsApi';
+import { createPurchaseOrder } from '../../services/createPurchaseOrderApi';
 
 const CreatePurchaseOrderPage = () => {
   const navigate = useNavigate();
@@ -78,72 +81,11 @@ const CreatePurchaseOrderPage = () => {
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const response = await axios.get(
-          'http://localhost:3000/api/v1/vendors'
-        );
-
-        // IMPORTANT:
-        // Print the complete backend response so we can see
-        // exactly how the vendor data is structured.
-
-        console.log(
-          'FULL VENDOR API RESPONSE:',
-          JSON.stringify(response.data, null, 2)
-        );
-
-        // Backend may return vendors in different structures.
-        // We handle the common structures here.
-
-        const responseData = response.data;
-
-        let vendorList = [];
-
-        if (Array.isArray(responseData)) {
-
-          // Example:
-          // response.data = [ {...}, {...} ]
-
-          vendorList = responseData;
-
-        } else if (Array.isArray(responseData?.data)) {
-
-          // Example:
-          // response.data = { data: [ {...}, {...} ] }
-
-          vendorList = responseData.data;
-
-        } else if (Array.isArray(responseData?.vendors)) {
-
-          // Example:
-          // response.data = { vendors: [ {...}, {...} ] }
-
-          vendorList = responseData.vendors;
-
-        } else if (Array.isArray(responseData?.data?.rows)) {
-
-          // Example:
-          // response.data = { data: { rows: [...] } }
-
-          vendorList = responseData.data.rows;
-
-        } else if (Array.isArray(responseData?.rows)) {
-
-          // Example:
-          // response.data = { rows: [...] }
-
-          vendorList = responseData.rows;
-        }
-
-        console.log('FINAL VENDOR ARRAY:', vendorList);
-
-        setVendors(vendorList);
-
+        const result = await getVendors({ limit: 100 });
+        console.log('FINAL VENDOR ARRAY:', result.data);
+        setVendors(result.data || []);
       } catch (error) {
-        console.error(
-          'Failed to fetch vendors:',
-          error.response?.data || error
-        );
-
+        console.error('Failed to fetch vendors:', error);
         setVendors([]);
       }
     };
@@ -355,25 +297,25 @@ const CreatePurchaseOrderPage = () => {
 
       console.log('Purchase Order Payload:', payload);
 
-      const response = await axios.post(
-        'http://localhost:3000/api/v1/purchase-orders',
-        payload
-      );
+      const result = await createPurchaseOrder(payload);
 
-      console.log('Purchase Order Response:', response.data);
+      console.log('Purchase Order Response:', result);
 
-      alert('Purchase Order saved successfully');
-
-      navigate('/purchase');
+      if (result.success) {
+        alert('Purchase Order saved successfully');
+        navigate('/purchase');
+      } else {
+        alert(result.message || 'Failed to save Purchase Order');
+      }
 
     } catch (error) {
       console.error(
         'Save Error:',
-        error.response?.data || error
+        error
       );
 
       alert(
-        error.response?.data?.message ||
+        error.message ||
         'Failed to save Purchase Order'
       );
     }
@@ -564,19 +506,15 @@ const CreatePurchaseOrderPage = () => {
                      */
 
 
-                    const response = await axios.get(
-                      `http://localhost:3000/api/v1/vendors/${vendorId}`
-                    );
-
+                    const result = await getVendorById(vendorId);
 
                     console.log(
                       "Vendor Details Response:",
-                      response.data
+                      result
                     );
 
-
                     const addresses =
-                      response.data?.data?.addresses || {};
+                      result.data?.addresses || {};
 
 
                     /*

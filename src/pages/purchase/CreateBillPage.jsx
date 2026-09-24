@@ -518,7 +518,7 @@ const CreateBillPage = () => {
         vendor_id: selectedVendorId,
         vendor_code: selectedVendor?.vendorCode || null,
         bill_number: billNumber,
-        purchase_order_id: orderNumber ? parseInt(orderNumber, 10) : null,
+        purchase_order_id: orderNumber,
         billing_address: selectedVendor?.primaryAddress || "", // placeholder if needed
         shipping_address: "",
         bill_date: billDate,

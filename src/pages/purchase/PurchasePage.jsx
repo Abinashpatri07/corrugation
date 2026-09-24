@@ -426,7 +426,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Filter, MoreHorizontal, ChevronDown } from 'lucide-react';
-import axios from 'axios';
+import { getAllPurchaseOrders } from '../../services/purchaseOrderlistApi';
+import { getAllBills } from '../../services/billlistApi';
 
 const tabs = ['Expenses', 'Procurement', 'Purchase Order', 'Bills', 'Payment'];
 
@@ -538,17 +539,15 @@ const PurchasePage = () => {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        'http://localhost:3000/api/v1/purchase-orders'
-      );
+      const result = await getAllPurchaseOrders();
 
       console.log(
         'Purchase Orders from backend:',
-        response.data
+        result
       );
 
-      if (response.data.success) {
-        setOrders(response.data.data);
+      if (result.success) {
+        setOrders(result.data);
       }
 
     } catch (error) {
@@ -568,14 +567,12 @@ const PurchasePage = () => {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        'http://localhost:3000/api/v1/purchase/bills'
-      );
+      const result = await getAllBills();
 
-      console.log('Bills from backend:', response.data);
+      console.log('Bills from backend:', result);
 
-      if (response.data.success) {
-        setBills(response.data.data || []);
+      if (result.success) {
+        setBills(result.data || []);
       } else {
         setBills([]);
       }
