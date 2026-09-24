@@ -824,10 +824,9 @@ const CreateBillPage = () => {
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Bill Date <span className="text-red-500">*</span></label>
                 <input 
-                  type="text" 
+                  type="date" 
                   value={billDate} 
                   onChange={(e) => setBillDate(e.target.value)} 
-                  placeholder="Enter Bill Date" 
                   className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
                 />
               </div>
@@ -836,10 +835,9 @@ const CreateBillPage = () => {
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Due Date <span className="text-red-500">*</span></label>
                 <input 
-                  type="text" 
+                  type="date" 
                   value={dueDate} 
                   onChange={(e) => setDueDate(e.target.value)} 
-                  placeholder="Enter Due Date" 
                   className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
                 />
               </div>
