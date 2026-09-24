@@ -401,11 +401,22 @@ const CreateBillPage = () => {
   // Error message
   const [vendorError, setVendorError] = useState("");
 
+  const [billNumber, setBillNumber] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [billDate, setBillDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [accountsPayable, setAccountsPayable] = useState("");
+  const [subject, setSubject] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
   const [rows, setRows] = useState([
     {
       id: 1,
       quantity: 1,
       rate: 0,
+      itemDetails: "",
+      customerDetails: ""
     },
   ]);
 
@@ -426,6 +437,8 @@ const CreateBillPage = () => {
         id: Date.now(),
         quantity: 1,
         rate: 0,
+        itemDetails: "",
+        customerDetails: ""
       },
     ]);
   const removeRow = (id) => setRows(prev => prev.filter(r => r.id !== id));
@@ -514,6 +527,63 @@ const CreateBillPage = () => {
   // Final grand total
   const grandTotal =
     taxableAmount + taxAmount;
+
+  const handleSave = async () => {
+    if (!selectedVendorId || !billNumber || !orderNumber) {
+      alert("Please fill in Vendor, Bill Number, and Order Number.");
+      return;
+    }
+    try {
+      setIsSaving(true);
+      const payload = {
+        vendor_id: selectedVendorId,
+        vendor_code: selectedVendor?.vendorCode || null,
+        bill_number: billNumber,
+        purchase_order_id: null,
+        billing_address: selectedVendor?.primaryAddress || "", // placeholder if needed
+        shipping_address: "",
+        bill_date: billDate,
+        due_date: dueDate,
+        delivery_status: 'Pending',
+        grn_status: 'Pending',
+        item_count: rows.length,
+        item_total: subtotal,
+        gst_rate: taxRate,
+        gst_amount: taxAmount,
+        discount_rate: discountType === "percent" ? discount : 0,
+        discount_amount: discountValue,
+        total_amount: grandTotal,
+        remarks: remarks,
+        items: rows.map(r => ({
+          reel_spec: r.itemDetails,
+          reel_description: r.customerDetails,
+          quantity: r.quantity,
+          unit_rate: r.rate,
+          total_amount: r.quantity * r.rate,
+          remarks: ""
+        }))
+      };
+
+      const res = await fetch("http://localhost:3000/api/v1/purchase/bills", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        navigate('/purchase', { state: { activeTab: 'Bills' } });
+      } else {
+        alert(data.message || "Failed to save bill");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while saving the bill.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden bg-[#f4f7f9] p-1.5 gap-1.5">
@@ -729,37 +799,72 @@ const CreateBillPage = () => {
               {/* Bill# */}
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Bill <span className="text-red-500">*</span></label>
-                <input type="text" placeholder="Enter Bill Number" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                <input 
+                  type="text" 
+                  value={billNumber} 
+                  onChange={(e) => setBillNumber(e.target.value)} 
+                  placeholder="Enter Bill Number" 
+                  className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                />
               </div>
 
               {/* Order Number */}
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Order Number <span className="text-red-500">*</span></label>
-                <input type="text" placeholder="Enter Order Number" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                <input 
+                  type="text" 
+                  value={orderNumber} 
+                  onChange={(e) => setOrderNumber(e.target.value)} 
+                  placeholder="Enter Order Number" 
+                  className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                />
               </div>
 
               {/* Bill Date */}
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Bill Date <span className="text-red-500">*</span></label>
-                <input type="text" placeholder="Enter Bill Date" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                <input 
+                  type="text" 
+                  value={billDate} 
+                  onChange={(e) => setBillDate(e.target.value)} 
+                  placeholder="Enter Bill Date" 
+                  className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                />
               </div>
 
               {/* Due Date */}
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Due Date <span className="text-red-500">*</span></label>
-                <input type="text" placeholder="Enter Due Date" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                <input 
+                  type="text" 
+                  value={dueDate} 
+                  onChange={(e) => setDueDate(e.target.value)} 
+                  placeholder="Enter Due Date" 
+                  className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                />
               </div>
 
               {/* Accounts Payable */}
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Accounts Payable</label>
-                <input type="text" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                <input 
+                  type="text" 
+                  value={accountsPayable} 
+                  onChange={(e) => setAccountsPayable(e.target.value)} 
+                  className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                />
               </div>
 
               {/* Subject */}
               <div className="flex items-center gap-4">
                 <label className="w-32 text-[12px] font-bold text-gray-700 shrink-0">Subject</label>
-                <input type="text" placeholder="Enter 250 Character Subject" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                <input 
+                  type="text" 
+                  value={subject} 
+                  onChange={(e) => setSubject(e.target.value)} 
+                  placeholder="Enter 250 Character Subject" 
+                  className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                />
               </div>
 
             </div>
@@ -801,7 +906,16 @@ const CreateBillPage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
                     </svg>
                   </div>
-                  <input type="text" className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                  <input 
+                    type="text" 
+                    value={row.itemDetails}
+                    onChange={(e) => {
+                      setRows(prevRows => prevRows.map(item => 
+                        item.id === row.id ? { ...item, itemDetails: e.target.value } : item
+                      ));
+                    }}
+                    className="flex-1 border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                  />
                 </div>
 
                 {/* Quantity */}
@@ -907,7 +1021,16 @@ const CreateBillPage = () => {
                   <span className="absolute left-3 text-gray-400">
                     <User className="w-3.5 h-3.5" />
                   </span>
-                  <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm pl-8 pr-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" />
+                  <input 
+                    type="text" 
+                    value={row.customerDetails}
+                    onChange={(e) => {
+                      setRows(prevRows => prevRows.map(item => 
+                        item.id === row.id ? { ...item, customerDetails: e.target.value } : item
+                      ));
+                    }}
+                    className="w-full border border-gray-200 rounded-md shadow-sm pl-8 pr-3 py-2 text-[12px] focus:outline-none focus:border-blue-500" 
+                  />
                 </div>
 
 
@@ -965,6 +1088,8 @@ const CreateBillPage = () => {
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex-1 flex flex-col">
                 <h3 className="text-[15px] font-bold text-[#1a233a] mb-4">Remarks & Note</h3>
                 <textarea
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
                   className="w-full flex-1 border border-gray-200 rounded-md shadow-sm p-3 text-[13px] resize-none focus:outline-none focus:border-blue-500 min-h-[120px]"
                   placeholder="Enter remarks..."
                 />
@@ -1187,10 +1312,11 @@ const CreateBillPage = () => {
           Save Draft
         </button>
         <button
-          onClick={() => navigate('/purchase', { state: { activeTab: 'Bills' } })}
-          className="px-6 py-1.5 rounded-lg bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white text-[13px] font-bold shadow-sm hover:opacity-90 transition-colors"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="px-6 py-1.5 rounded-lg bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white text-[13px] font-bold shadow-sm hover:opacity-90 transition-colors disabled:opacity-50"
         >
-          Save
+          {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
 
