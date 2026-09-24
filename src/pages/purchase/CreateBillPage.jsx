@@ -379,6 +379,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChevronDown, Plus, Minus, GripVertical, Bookmark, Check, HandCoins, UploadCloud, User, Trash2
 } from 'lucide-react';
+import { getVendors } from '../../services/vendorlistApi';
+import { createBill } from '../../services/createBillApi';
 
 const CreateBillPage = () => {
   const navigate = useNavigate();
@@ -455,37 +457,14 @@ const CreateBillPage = () => {
         setVendorsLoading(true);
         setVendorError("");
 
-        const response = await fetch(
-          "http://localhost:3000/api/v1/vendors"
-        );
-
-        const result = await response.json();
-
-        console.log("Vendor API response:", result);
-
-        if (!response.ok) {
-          throw new Error(
-            result.message || "Failed to fetch vendors"
-          );
-        }
-
-        /*
-         * Your Vendor API returns:
-         *
-         * {
-         *   success: true,
-         *   data: [...]
-         * }
-         */
+        const result = await getVendors({ limit: 100 });
         setVendors(result.data || []);
 
       } catch (error) {
         console.error("Vendor fetch error:", error);
-
         setVendorError(
           error.message || "Unable to load vendors"
         );
-
       } finally {
         setVendorsLoading(false);
       }
@@ -564,22 +543,15 @@ const CreateBillPage = () => {
         }))
       };
 
-      const res = await fetch("http://localhost:3000/api/v1/purchase/bills", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await createBill(payload);
+      if (data.success) {
         navigate('/purchase', { state: { activeTab: 'Bills' } });
       } else {
         alert(data.message || "Failed to save bill");
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred while saving the bill.");
+      alert("Error: " + err.message);
     } finally {
       setIsSaving(false);
     }

@@ -426,6 +426,9 @@ import {
   ArrowRightLeft, ChevronDown
 } from 'lucide-react';
 
+import { getBillById } from '../../services/billDetailsApi';
+import { getAllBills } from '../../services/billlistApi';
+
 // ============================================================
 //  BILL DETAIL PAGE COMPONENT
 // ============================================================
@@ -470,26 +473,9 @@ const BillDetailPage = () => {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `http://localhost:3000/api/v1/purchase/bills/${id}`
-        );
-
-        const result = await response.json();
+        const result = await getBillById(id);
 
         console.log("Bill Detail API:", result);
-
-        if (!response.ok) {
-          throw new Error(
-            result.message || "Failed to fetch bill"
-          );
-        }
-
-        // Backend response:
-        // {
-        //   success: true,
-        //   message: "...",
-        //   data: {...}
-        // }
 
         setBill(result.data);
 
@@ -526,19 +512,9 @@ const BillDetailPage = () => {
 
       try {
 
-        const response = await fetch(
-          "http://localhost:3000/api/v1/purchase/bills"
-        );
-
-        const result = await response.json();
+        const result = await getAllBills();
 
         console.log("All Bills API:", result);
-
-        if (!response.ok) {
-          throw new Error(
-            result.message || "Failed to fetch bills"
-          );
-        }
 
         setBills(
           Array.isArray(result.data)
