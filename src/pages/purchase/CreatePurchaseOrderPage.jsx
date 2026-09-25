@@ -20,7 +20,7 @@ import {
   Paperclip
 } from 'lucide-react';
 import { getVendors } from '../../services/vendorlistApi';
-import { getVendorById } from '../../services/vendorDetailsApi';
+import { getVendorDetails } from '../../services/vendorDetailsApi';
 import { createPurchaseOrder } from '../../services/createPurchaseOrderApi';
 
 const CreatePurchaseOrderPage = () => {
@@ -506,7 +506,7 @@ const CreatePurchaseOrderPage = () => {
                      */
 
 
-                    const result = await getVendorById(vendorId);
+                    const result = await getVendorDetails(vendorId);
 
                     console.log(
                       "Vendor Details Response:",

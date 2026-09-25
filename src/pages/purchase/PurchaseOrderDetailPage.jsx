@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { getPurchaseOrderById } from '../../services/purchaseOrderDetailsApi';
 import { getAllPurchaseOrders } from '../../services/purchaseOrderlistApi';
-import { getVendorById } from '../../services/vendorDetailsApi';
+import { getVendorDetails } from '../../services/vendorDetailsApi';
 
 const PurchaseOrderDetailPage = () => {
   const navigate = useNavigate();
@@ -122,7 +122,7 @@ const PurchaseOrderDetailPage = () => {
 
         if (vendorId) {
           try {
-            const vendorResult = await getVendorById(vendorId);
+            const vendorResult = await getVendorDetails(vendorId);
 
             console.log('Vendor Details API Response:', vendorResult);
 
