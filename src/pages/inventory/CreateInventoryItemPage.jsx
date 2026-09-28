@@ -6,6 +6,7 @@ const CreateInventoryItemPage = () => {
   const navigate = useNavigate();
   const [showPurchaseInfo, setShowPurchaseInfo] = useState(true);
   const [showSalesInfo, setShowSalesInfo] = useState(true);
+  const [category, setCategory] = useState('');
   
   const tabs = [
     { name: 'Items', path: '/inventory', active: true },
@@ -107,14 +108,18 @@ const CreateInventoryItemPage = () => {
                         Category <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500">
-                          <option>Select Category</option>
-                          <option>Reel</option>
-                          <option>Glue</option>
-                          <option>Paper</option>
-                          <option>2 Ply</option>
-                          <option>Board</option>
-                          <option>Box</option>
+                        <select 
+                          className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                        >
+                          <option value="">Select Category</option>
+                          <option value="Reel">Reel</option>
+                          <option value="Glue">Glue</option>
+                          <option value="Paper">Paper</option>
+                          <option value="2 Ply">2 Ply</option>
+                          <option value="Board">Board</option>
+                          <option value="Box">Box</option>
                         </select>
                         <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
@@ -200,48 +205,168 @@ const CreateInventoryItemPage = () => {
               </div>
             </div>
 
-            {/* Paper Specification */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-gray-100 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f64f59] to-[#c471ed] flex items-center justify-center text-white shadow-sm">
-                  <FileText className="w-4 h-4" />
+            {/* Dynamic Specification Section */}
+            {category && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-100 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f64f59] to-[#c471ed] flex items-center justify-center text-white shadow-sm">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-[16px] font-bold text-[#1a233a]">
+                    {category === '2 Ply' ? 'Ply' : category} Specification
+                  </h3>
                 </div>
-                <h3 className="text-[16px] font-bold text-[#1a233a]">Paper Specification</h3>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      Paper Type <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
-                        <option></option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      Size <span className="text-red-500">*</span>
-                    </label>
-                    <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
-                  </div>
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      GSM <span className="text-red-500">*</span>
-                    </label>
-                    <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
-                  </div>
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">
-                      BF <span className="text-red-500">*</span>
-                    </label>
-                    <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    
+                    {/* Reel Specification */}
+                    {category === 'Reel' && (
+                      <>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Paper Type</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Size</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">GSM</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Glue Specification */}
+                    {category === 'Glue' && (
+                      <>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Tensile</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Peel</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Shear</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Paper Specification */}
+                    {category === 'Paper' && (
+                      <>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">GSM</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Paper_Length</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Paper_Width</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                      </>
+                    )}
+
+                    {/* 2 Ply Specification */}
+                    {category === '2 Ply' && (
+                      <>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Ply</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Ply_Length</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Ply_Width</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Board Specification */}
+                    {category === 'Board' && (
+                      <>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Ply</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Board_Length</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Board_Width</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Box Specification */}
+                    {category === 'Box' && (
+                      <>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Type</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Paper Type</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Size</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Ply</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box_Len</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box_Wid</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                        <div>
+                          <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box_Hei</label>
+                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                        </div>
+                      </>
+                    )}
+
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Purchase & Sales Information Combined */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-1">
