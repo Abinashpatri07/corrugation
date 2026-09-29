@@ -133,8 +133,13 @@ const CreateInventoryControlPage = () => {
                         Account <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <input type="text" placeholder="Select Brand" className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white placeholder-gray-400" />
-                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
+                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500">
+                          <option value="">Select Account</option>
+                          <option value="Inventory Asset">Inventory Asset</option>
+                          <option value="Cost of Goods Sold">Cost of Goods Sold</option>
+                          <option value="Inventory Adjustment">Inventory Adjustment</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
                     <div>
@@ -142,8 +147,15 @@ const CreateInventoryControlPage = () => {
                         Reason <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <input type="text" placeholder="Select Brand" className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white placeholder-gray-400" />
-                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
+                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500">
+                          <option value="">Select Reason</option>
+                          <option value="Stock on fire">Stock on fire</option>
+                          <option value="Stolen goods">Stolen goods</option>
+                          <option value="Damaged goods">Damaged goods</option>
+                          <option value="Stock Written off">Stock Written off</option>
+                          <option value="Inventory Revaluation">Inventory Revaluation</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
                   </div>

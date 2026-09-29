@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import chatgptImageFront from '../../assets/chatgpt_image_front.png';
 import chatgptImageRear from '../../assets/chatgpt_image_rear.png';
@@ -16,17 +16,75 @@ import {
   ChevronDown,
   FileText,
   Box,
-  List
+  List,
+  Loader2
 } from 'lucide-react';
+import { getInventoryItemDetails } from '../../services/inventoryItemDetailsApi';
+import { getInventoryItems } from '../../services/inventoryItemListApi';
 
 const InventoryItemDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const [itemDetail, setItemDetail] = useState(null);
+  const [allItems, setAllItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch both detail and list concurrently
+        const [detailRes, listRes] = await Promise.all([
+          getInventoryItemDetails(id),
+          getInventoryItems({ limit: 50 }) // Fetching up to 50 items for the sidebar
+        ]);
+
+        if (detailRes.success) {
+          setItemDetail(detailRes.data);
+        } else {
+          setError(detailRes.message);
+        }
+
+        if (listRes.success) {
+          setAllItems(listRes.data);
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to fetch details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
+
   const tabs = [
     { name: 'Items', path: '/inventory' },
     { name: 'Inventory Control', path: '/inventory/control' }
   ];
+
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-hidden bg-[#f4f7fb] flex flex-col items-center justify-center relative p-1.5 gap-1.5">
+        <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+        <p className="mt-4 text-gray-500 font-medium">Loading details...</p>
+      </main>
+    );
+  }
+
+  if (error || !itemDetail) {
+    return (
+      <main className="flex-1 overflow-hidden bg-[#f4f7fb] flex flex-col items-center justify-center relative p-1.5 gap-1.5">
+        <div className="text-red-500 font-medium text-lg">Error: {error || 'Item not found'}</div>
+        <button onClick={() => navigate('/inventory')} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Back to Inventory</button>
+      </main>
+    );
+  }
+
+  const { item, spec } = itemDetail;
 
   return (
     <main className="flex-1 overflow-hidden bg-[#f4f7fb] flex flex-col relative p-1.5 gap-1.5">
@@ -84,7 +142,7 @@ const InventoryItemDetailPage = () => {
         {/* Split View Content */}
         <div className="flex-1 flex overflow-hidden gap-1.5">
 
-          {/* Left Sidebar (Bills List) */}
+          {/* Left Sidebar (Items List) */}
           <div className="w-[270px] bg-white rounded-2xl border border-gray-200 flex flex-col flex-shrink-0 shadow-sm overflow-hidden">
             <div className="p-5 border-b border-gray-100">
               <div className="flex items-center justify-between mb-4">
@@ -92,64 +150,38 @@ const InventoryItemDetailPage = () => {
                   <h3 className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">All Items</h3>
                   <ChevronDown className="w-5 h-5 text-[#8b5cf6]" />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => navigate('/purchase/procurement/new')}
-                    className="w-7 h-7 bg-gray-900 hover:bg-black text-white rounded-full flex items-center justify-center shadow-sm transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <button className="w-7 h-7 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full flex items-center justify-center transition-colors">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="relative flex items-center">
-                  <Search className="absolute left-3 w-3.5 h-3.5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search customer, product or item..."
-                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-lg pl-8 pr-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-[#ff6b6b]/30 text-[#1a2337] transition-all"
-                  />
-                </div>
               </div>
             </div>
 
             <div className="flex-1 p-4 space-y-3 overflow-y-auto custom-scrollbar">
-              {/* Card 1 (Active) */}
-              <div className="bg-gradient-to-r from-[#ffede1] via-[#fae8f8] to-[#efdfff] border border-[#d54a88]/30 rounded-2xl p-3 shadow-sm flex flex-col justify-between min-h-[70px]">
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-[13px] font-bold text-[#111827] leading-tight line-clamp-2">A 180 GSM Kraft Liner Roll (Virgin Kraft)</span>
-                  <span className="text-[11px] text-gray-500 font-medium shrink-0 pt-0.5">25/06/2026</span>
-                </div>
-                <div className="flex justify-end mt-2">
-                  <span className="text-[12px] font-bold text-[#111827]">₹42,322.00</span>
-                </div>
-              </div>
-
-              {/* Card 2 */}
-              <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-3 cursor-pointer hover:border-[#402de8]/40 hover:bg-gradient-to-br hover:from-[#fff5f2] hover:via-[#fcf5fd] hover:to-[#f6f5fe] hover:shadow-md transition-all flex flex-col justify-between min-h-[70px]">
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2">A 180 GSM Kraft Liner Roll (Virgin Kraft)</span>
-                  <span className="text-[11px] text-gray-400 font-medium shrink-0 pt-0.5">25/06/2026</span>
-                </div>
-                <div className="flex justify-end mt-2">
-                  <span className="text-[12px] font-bold text-gray-900">₹42,322.00</span>
-                </div>
-              </div>
-
-              {/* Card 3 */}
-              <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-3 cursor-pointer hover:border-[#402de8]/40 hover:bg-gradient-to-br hover:from-[#fff5f2] hover:via-[#fcf5fd] hover:to-[#f6f5fe] hover:shadow-md transition-all flex flex-col justify-between min-h-[70px]">
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2">A 180 GSM Kraft Liner Roll (Virgin Kraft)</span>
-                  <span className="text-[11px] text-gray-400 font-medium shrink-0 pt-0.5">25/06/2026</span>
-                </div>
-                <div className="flex justify-end mt-2">
-                  <span className="text-[12px] font-bold text-gray-900">₹42,322.00</span>
-                </div>
-              </div>
+              {allItems.map((listItem) => {
+                const isActive = listItem.invItemId === id;
+                return (
+                  <div 
+                    key={listItem.invItemId}
+                    onClick={() => navigate(`/inventory/${listItem.invItemId}`)}
+                    className={`rounded-2xl p-3 shadow-sm flex flex-col justify-between min-h-[70px] cursor-pointer transition-all ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-[#ffede1] via-[#fae8f8] to-[#efdfff] border border-[#d54a88]/30'
+                        : 'bg-white border border-gray-200 hover:border-[#402de8]/40 hover:bg-gradient-to-br hover:from-[#fff5f2] hover:via-[#fcf5fd] hover:to-[#f6f5fe] hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <span className={`text-[13px] font-bold leading-tight line-clamp-2 ${isActive ? 'text-[#111827]' : 'text-gray-900'}`}>
+                        {listItem.itemName}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-end mt-2">
+                      <span className={`text-[11px] font-medium shrink-0 pt-0.5 ${isActive ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {listItem.itemCode}
+                      </span>
+                      <span className={`text-[12px] font-bold ${isActive ? 'text-[#111827]' : 'text-gray-900'}`}>
+                        ₹{listItem.purPrice || '0.00'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -159,7 +191,7 @@ const InventoryItemDetailPage = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
-                  A 180 GSM Kraft Liner Roll (Virgin Kraft)
+                  {item.itemName} ({item.itemCode})
                 </h2>
               </div>
               <div className="flex items-center space-x-2">
@@ -203,7 +235,7 @@ const InventoryItemDetailPage = () => {
                       <div className="space-y-5 relative pl-4 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-gradient-to-b before:from-[#ff9a9e] before:via-[#fecfef] before:to-[#a1c4fd] before:rounded-full">
                         <div className="flex">
                           <div className="w-1/2 text-[13px] font-medium text-gray-500">Item Name</div>
-                          <div className="w-1/2 text-[13px] font-bold text-blue-500">260CMS-180GSM-18BF-NS</div>
+                          <div className="w-1/2 text-[13px] font-bold text-blue-500">{item.itemName}</div>
                         </div>
                         <div className="flex">
                           <div className="w-1/2 text-[13px] font-medium text-gray-500">Item Type</div>
@@ -211,27 +243,23 @@ const InventoryItemDetailPage = () => {
                         </div>
                         <div className="flex">
                           <div className="w-1/2 text-[13px] font-medium text-gray-500">Category</div>
-                          <div className="w-1/2 text-[13px] font-bold text-gray-900">Paper Reels</div>
+                          <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.category}</div>
                         </div>
                         <div className="flex">
                           <div className="w-1/2 text-[13px] font-medium text-gray-500">Unit</div>
-                          <div className="w-1/2 text-[13px] font-bold text-gray-900">Kg</div>
+                          <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.unit || '-'}</div>
                         </div>
                         <div className="flex">
-                          <div className="w-1/2 text-[13px] font-medium text-gray-500">Created Source</div>
-                          <div className="w-1/2 text-[13px] font-bold text-gray-900">User</div>
+                          <div className="w-1/2 text-[13px] font-medium text-gray-500">Brand</div>
+                          <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.brand || '-'}</div>
                         </div>
                         <div className="flex">
                           <div className="w-1/2 text-[13px] font-medium text-gray-500">Inventory Account</div>
-                          <div className="w-1/2 text-[13px] font-bold text-gray-900">Inventory Asset</div>
+                          <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.inventoryAccount || '-'}</div>
                         </div>
                         <div className="flex">
                           <div className="w-1/2 text-[13px] font-medium text-gray-500">Inventory Valuation Method</div>
-                          <div className="w-1/2 text-[13px] font-bold text-gray-900">FIFO (First In First Out)</div>
-                        </div>
-                        <div className="flex">
-                          <div className="w-1/2 text-[13px] font-medium text-gray-500">Goods Received Not Invoiced Account</div>
-                          <div className="w-1/2 text-[13px] font-bold text-gray-900">Inventory Asset</div>
+                          <div className="w-1/2 text-[13px] font-bold text-gray-900">FIFO (Default)</div>
                         </div>
                       </div>
                     </div>
@@ -244,45 +272,81 @@ const InventoryItemDetailPage = () => {
                       <div className="mb-4">
                         <h4 className="text-[12px] font-bold text-gray-800 mb-2">Front View</h4>
                         <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
-                          <img src={chatgptImageFront} alt="Front View" className="w-full h-full object-cover" />
+                          {item.frontView ? (
+                            <img src={item.frontView} alt="Front View" className="w-full h-full object-cover" />
+                          ) : (
+                            <img src={chatgptImageFront} alt="Placeholder Front View" className="w-full h-full object-cover opacity-50" />
+                          )}
                         </div>
                       </div>
                       <div>
                         <h4 className="text-[12px] font-bold text-gray-800 mb-2">Rear View</h4>
                         <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
-                          <img src={chatgptImageRear} alt="Rear View" className="w-full h-full object-cover" />
+                          {item.rearView ? (
+                            <img src={item.rearView} alt="Rear View" className="w-full h-full object-cover" />
+                          ) : (
+                            <img src={chatgptImageRear} alt="Placeholder Rear View" className="w-full h-full object-cover opacity-50" />
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Row */}
+                {/* Specification & Purchase Information Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  
+                  {/* Category Specs Details */}
+                  {spec && Object.keys(spec).length > 0 && (
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                      <h3 className="text-[17px] font-bold text-gray-900 mb-6">{item.category} Specifications</h3>
+                      <div className="space-y-4.5">
+                        {Object.entries(spec).filter(([k]) => !k.includes('Id')).map(([key, value]) => (
+                          <div key={key} className="flex relative pl-4 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-0.5 before:bg-blue-300 before:rounded-full">
+                            <div className="w-1/2 text-[13px] font-medium text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                            <div className="w-1/2 text-[13px] font-bold text-gray-900">{value || '-'}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Purchase Information */}
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                     <h3 className="text-[17px] font-bold text-gray-900 mb-6">Purchase Information</h3>
                     <div className="space-y-4.5">
                       <div className="flex relative pl-4 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-0.5 before:bg-transparent before:rounded-full">
                         <div className="w-1/2 text-[13px] font-medium text-gray-500">Cost Price</div>
-                        <div className="w-1/2 text-[13px] font-bold text-gray-900">₹38,578.00</div>
+                        <div className="w-1/2 text-[13px] font-bold text-gray-900">₹{item.purPrice || '0.00'}</div>
                       </div>
                       <div className="flex relative pl-4 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-0.5 before:bg-transparent before:rounded-full">
                         <div className="w-1/2 text-[13px] font-medium text-gray-500">Purchase Account</div>
-                        <div className="w-1/2 text-[13px] font-bold text-gray-900">Materials</div>
+                        <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.purAccount || '-'}</div>
                       </div>
                       <div className="flex relative pl-4 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-0.5 before:bg-transparent before:rounded-full">
                         <div className="w-1/2 text-[13px] font-medium text-gray-500">Preferred Vendor</div>
-                        <div className="w-1/2 text-[13px] font-bold text-gray-900">Shree Paper Mills</div>
+                        <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.purVendor || '-'}</div>
+                      </div>
+                      <div className="flex relative pl-4 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-0.5 before:bg-transparent before:rounded-full">
+                        <div className="w-1/2 text-[13px] font-medium text-gray-500">Selling Price</div>
+                        <div className="w-1/2 text-[13px] font-bold text-gray-900">₹{item.sellingPrice || '0.00'}</div>
+                      </div>
+                      <div className="flex relative pl-4 before:absolute before:left-0 before:top-0.5 before:bottom-0.5 before:w-0.5 before:bg-transparent before:rounded-full">
+                        <div className="w-1/2 text-[13px] font-medium text-gray-500">Sales Account</div>
+                        <div className="w-1/2 text-[13px] font-bold text-gray-900">{item.sellingAccount || '-'}</div>
                       </div>
                     </div>
                   </div>
 
+                </div>
+
+                {/* Stock Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {/* Stock Details */}
                   <div className="bg-gradient-to-br from-[#fff5f0] via-[#fdf5fb] to-[#f4f2ff] rounded-xl border border-purple-100 shadow-sm p-5 flex flex-col">
                     <div className="border-b border-gray-300/40 pb-3 mb-3">
                       <h3 className="text-[17px] font-bold text-gray-900">
-                        Available Stock : <span className="bg-gradient-to-r from-[#ff7a59] to-[#6366f1] bg-clip-text text-transparent">220.00</span>
+                        Available Stock : <span className="bg-gradient-to-r from-[#ff7a59] to-[#6366f1] bg-clip-text text-transparent">{item.openingStock || '0.00'} {item.unit}</span>
                       </h3>
                     </div>
                     
@@ -292,11 +356,11 @@ const InventoryItemDetailPage = () => {
                       <div className="flex-1 space-y-5 relative pr-5 before:absolute before:right-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-gradient-to-b before:from-[#ff9a9e] before:via-[#eeb3e6] before:to-[#a1c4fd] before:rounded-full">
                         <div className="flex justify-between">
                           <span className="text-[12px] font-medium text-gray-500">Opening Stock</span>
-                          <span className="text-[13px] font-bold text-gray-900">100.00</span>
+                          <span className="text-[13px] font-bold text-gray-900">{item.openingStock || '0.00'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[12px] font-medium text-gray-500">Stock On Hand</span>
-                          <span className="text-[13px] font-bold text-gray-900">120.00</span>
+                          <span className="text-[13px] font-bold text-gray-900">{item.openingStock || '0.00'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-[12px] font-medium text-gray-500">Committed Stock</span>
@@ -307,7 +371,7 @@ const InventoryItemDetailPage = () => {
                       <div className="w-28 space-y-3">
                         <div className="bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm">
                           <span className="text-[10px] text-gray-400 block mb-0.5 leading-none">To be Recitable</span>
-                          <div className="text-[17px] font-bold text-gray-900 leading-none mt-1.5">1000<span className="text-[9px] font-medium text-gray-400 ml-1">Qty</span></div>
+                          <div className="text-[17px] font-bold text-gray-900 leading-none mt-1.5">0<span className="text-[9px] font-medium text-gray-400 ml-1">Qty</span></div>
                         </div>
                         <div className="bg-white border border-gray-100 rounded-lg p-2.5 shadow-sm">
                           <span className="text-[10px] text-gray-400 block mb-0.5 leading-none">To be Billed</span>
@@ -317,6 +381,7 @@ const InventoryItemDetailPage = () => {
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
