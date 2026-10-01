@@ -1,24 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const mockControlData = [
-  {
-    id: 1,
-    date: '05/07/2026',
-    reason: 'Stock Correction',
-    description: 'Physical Count Variance Adjusted For Kraft Paper 150 GSM',
-    status: 'Approved',
-    referenceNumber: 'ADJ-000012',
-    type: 'Inventory Adjustment',
-    createdBy: 'Suresh Kulkarni',
-    createdTime: '10:32 AM',
-    lastModifiedBy: 'Suresh Kulkarni',
-    lastModifiedTime: '11:15 AM'
-  }
-];
+import { getInventoryControls } from '../../services/inventoryControlListApi';
 
 const InventoryControlTable = () => {
   const navigate = useNavigate();
+  const [controls, setControls] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchControls = async () => {
+      try {
+        const response = await getInventoryControls();
+        setControls(response.data || []);
+      } catch (error) {
+        console.error("Failed to fetch inventory controls", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchControls();
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500 text-sm">Loading data...</div>;
+  }
 
   return (
     <div className="flex-1 overflow-x-auto w-full">
@@ -41,12 +46,21 @@ const InventoryControlTable = () => {
           </tr>
         </thead>
         <tbody>
-          {mockControlData.map((item) => (
+          {controls.length === 0 ? (
+            <tr>
+              <td colSpan="11" className="py-8 text-center text-gray-500 text-sm">
+                No inventory controls found.
+              </td>
+            </tr>
+          ) : (
+            controls.map((item) => (
             <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-[13px]">
               <td className="py-2 pl-4 pr-2">
                 <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
               </td>
-              <td className="py-2 px-4 font-medium text-[#1a233a] whitespace-nowrap">{item.date}</td>
+              <td className="py-2 px-4 font-medium text-[#1a233a] whitespace-nowrap">
+                  {new Date(item.date || item.createdAt).toLocaleDateString()}
+              </td>
               <td 
                 className="py-2 px-4 text-blue-500 font-medium cursor-pointer hover:underline whitespace-nowrap"
                 onClick={() => navigate(`/inventory/control/${item.id}`)}
@@ -54,7 +68,7 @@ const InventoryControlTable = () => {
                 {item.reason}
               </td>
               <td className="py-2 px-4 text-[#1a233a] font-medium leading-relaxed">
-                {item.description}
+                {item.description || '-'}
               </td>
               <td className="py-2 px-4 whitespace-nowrap">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -63,12 +77,15 @@ const InventoryControlTable = () => {
               </td>
               <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">{item.referenceNumber}</td>
               <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">{item.type}</td>
-              <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">{item.createdBy}</td>
-              <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">{item.createdTime}</td>
-              <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">{item.lastModifiedBy}</td>
-              <td className="py-2 pr-4 pl-4 text-[#1a233a] font-medium whitespace-nowrap">{item.lastModifiedTime}</td>
+              <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">Admin</td>
+              <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">
+                  {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </td>
+              <td className="py-2 px-4 text-[#1a233a] font-medium whitespace-nowrap">-</td>
+              <td className="py-2 pr-4 pl-4 text-[#1a233a] font-medium whitespace-nowrap">-</td>
             </tr>
-          ))}
+            ))
+          )}
         </tbody>
       </table>
     </div>

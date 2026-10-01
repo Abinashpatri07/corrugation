@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Upload, Package, FileText, ShoppingCart, Box, List, Bookmark, Check } from 'lucide-react';
 import { createInventoryItem } from '../../services/createInventoryItemApi';
+import { getVendors } from '../../services/vendorlistApi';
 
 const CreateInventoryItemPage = () => {
   const navigate = useNavigate();
@@ -9,9 +10,26 @@ const CreateInventoryItemPage = () => {
   const [showSalesInfo, setShowSalesInfo] = useState(true);
   const [category, setCategory] = useState('');
   
+  const [vendors, setVendors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdItemCode, setCreatedItemCode] = useState('');
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await getVendors({ limit: 100 });
+        if (response.data) {
+          setVendors(response.data);
+        } else if (response.rows) {
+          setVendors(response.rows); // Handle case where API response puts data in 'rows'
+        }
+      } catch (err) {
+        console.error('Failed to load vendors', err);
+      }
+    };
+    fetchVendors();
+  }, []);
   const [formData, setFormData] = useState({
     itemName: '', itemDesc: '', unit: '', brand: '',
     purPrice: '', purAccount: '', purDesc: '', purVendor: '',
@@ -526,9 +544,11 @@ const CreateInventoryItemPage = () => {
                       <div className="relative">
                         <select name="purVendor" value={formData.purVendor} onChange={handleChange} className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white">
                           <option value="">Select Vendor</option>
-                          <option value="1">Shree Paper Mills</option>
-                          <option value="2">ITC Limited</option>
-                          <option value="3">JK Paper</option>
+                          {vendors.map(vendor => (
+                            <option key={vendor.vendorId} value={vendor.vendorId}>
+                              {vendor.companyName || vendor.displayName}
+                            </option>
+                          ))}
                         </select>
                         <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>

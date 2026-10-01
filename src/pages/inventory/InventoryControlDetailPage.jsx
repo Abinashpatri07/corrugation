@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import chatgptImageFront from '../../assets/chatgpt_image_front.png';
 import chatgptImageRear from '../../assets/chatgpt_image_rear.png';
+import { getInventoryControls } from '../../services/inventoryControlListApi';
+import { getInventoryControlDetails } from '../../services/inventoryControlDetailsApi';
 import {
   Plus,
   MoreHorizontal,
@@ -25,6 +27,30 @@ import {
 const InventoryControlDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  
+  const [controls, setControls] = useState([]);
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const listRes = await getInventoryControls();
+        setControls(listRes.data || []);
+        
+        if (id) {
+          const detailRes = await getInventoryControlDetails(id);
+          setDetails(detailRes.data);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
 
   const tabs = [
     { name: 'Items', path: '/inventory' },
@@ -123,53 +149,50 @@ const InventoryControlDetailPage = () => {
             </div>
 
             <div className="flex-1 p-3 space-y-2.5 overflow-y-auto custom-scrollbar">
-              {/* Card 1 (Active) */}
-              <div className="bg-gradient-to-r from-[#ffede1] via-[#fae8f8] to-[#efdfff] border border-[#d54a88]/30 rounded-2xl p-3 shadow-sm flex flex-col justify-between min-h-[76px] cursor-pointer">
-                <div className="flex justify-between items-start gap-2 mb-1.5">
-                  <span className="text-[17px] font-medium text-[#111827] leading-tight">IC-0001</span>
-                  <span className="text-[11px] text-gray-600 font-medium shrink-0 pt-0.5">10/08/2026</span>
-                </div>
-                <div className="flex justify-end items-center mt-auto">
-                  <span className="text-[13px] font-bold text-[#111827]">₹42,322.00</span>
-                </div>
-              </div>
-
-              {/* Card 2 (Hover/Selected state) */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex flex-col justify-between min-h-[76px] cursor-pointer hover:border-[#402de8]/40 hover:bg-gradient-to-br hover:from-[#fff5f2] hover:via-[#fcf5fd] hover:to-[#f6f5fe] hover:shadow-md transition-all">
-                <div className="flex justify-between items-start gap-2 mb-1.5">
-                  <span className="text-[15px] font-medium text-[#111827] leading-tight">Stock Damage</span>
-                  <span className="text-[11px] text-gray-400 font-medium shrink-0 pt-0.5">25/06/2026</span>
-                </div>
-                <div className="flex justify-between items-center mt-auto">
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-bold bg-[#3b82f6] text-white">Adjusted</span>
-                  <span className="text-[13px] font-bold text-[#111827]">₹2,322.00</span>
-                </div>
-              </div>
-
-              {/* Card 3 (Default) */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex flex-col justify-between min-h-[76px] cursor-pointer hover:border-[#402de8]/40 hover:bg-gradient-to-br hover:from-[#fff5f2] hover:via-[#fcf5fd] hover:to-[#f6f5fe] hover:shadow-md transition-all">
-                <div className="flex justify-between items-start gap-2 mb-1.5">
-                  <span className="text-[15px] font-medium text-[#111827] leading-tight">Stock Count Adjustment</span>
-                  <span className="text-[11px] text-gray-400 font-medium shrink-0 pt-0.5">25/06/2026</span>
-                </div>
-                <div className="flex justify-between items-center mt-auto">
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-bold bg-[#3b82f6] text-white">Adjusted</span>
-                  <span className="text-[13px] font-bold text-[#111827]">₹1,322.00</span>
-                </div>
-              </div>
+              {controls.map(control => {
+                const isActive = String(control.id) === String(id);
+                return (
+                  <div 
+                    key={control.id}
+                    onClick={() => navigate(`/inventory/control/${control.id}`)}
+                    className={`border rounded-2xl p-3 shadow-sm flex flex-col justify-between min-h-[76px] cursor-pointer transition-all ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-[#ffede1] via-[#fae8f8] to-[#efdfff] border-[#d54a88]/30' 
+                        : 'bg-white border-gray-200 hover:border-[#402de8]/40 hover:bg-gradient-to-br hover:from-[#fff5f2] hover:via-[#fcf5fd] hover:to-[#f6f5fe] hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                      <span className="text-[15px] font-medium text-[#111827] leading-tight">{control.referenceNumber}</span>
+                      <span className="text-[11px] text-gray-400 font-medium shrink-0 pt-0.5">
+                        {new Date(control.date || control.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-auto">
+                      <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-bold bg-[#3b82f6] text-white">{control.status}</span>
+                      <span className="text-[13px] font-bold text-[#111827]">{control.type}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* Right Main Content */}
           <div className="flex-1 flex flex-col gap-1.5 overflow-hidden min-h-0">
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center text-gray-500">Loading...</div>
+            ) : !details ? (
+              <div className="flex-1 flex items-center justify-center text-gray-500">Select an adjustment from the left</div>
+            ) : (
+              <>
             {/* Detail Header */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] bg-clip-text text-transparent inline-block w-fit">
-                  IC-0001
+                  {details.referenceNumber}
                 </h2>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#3b82f6] text-white">
-                  Adjusted
+                  {details.status}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -199,27 +222,27 @@ const InventoryControlDetailPage = () => {
                       <div className="space-y-4 relative pl-4 before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-gradient-to-b before:from-[#ff9a9e] before:via-[#fecfef] before:to-[#a1c4fd] before:rounded-full">
                         <div className="flex justify-between items-center">
                           <div className="text-[13px] font-medium text-gray-500">Date</div>
-                          <div className="text-[13px] font-bold text-gray-900">10/08/2026</div>
+                          <div className="text-[13px] font-bold text-gray-900">{new Date(details.date || details.createdAt).toLocaleDateString()}</div>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="text-[13px] font-medium text-gray-500">Reason</div>
-                          <div className="text-[13px] font-bold text-gray-900">Inventory Revaluation</div>
+                          <div className="text-[13px] font-bold text-gray-900">{details.reason}</div>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="text-[13px] font-medium text-gray-500">Account</div>
-                          <div className="text-[13px] font-bold text-gray-900">Cost Of Goods Sold</div>
+                          <div className="text-[13px] font-bold text-gray-900">Cost Of Goods Sold (Default)</div>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="text-[13px] font-medium text-gray-500">Adjustment Type</div>
-                          <div className="text-[13px] font-bold text-gray-900">Quantity</div>
+                          <div className="text-[13px] font-bold text-gray-900">{details.type}</div>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="text-[13px] font-medium text-gray-500">Adjusted By</div>
-                          <div className="text-[13px] font-bold text-gray-900">tiku.svia</div>
+                          <div className="text-[13px] font-bold text-gray-900">Admin</div>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="text-[13px] font-medium text-gray-500">Created Time</div>
-                          <div className="text-[13px] font-bold text-gray-900">10/08/2026 12:51 PM</div>
+                          <div className="text-[13px] font-bold text-gray-900">{new Date(details.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</div>
                         </div>
                       </div>
                     </div>
@@ -230,8 +253,8 @@ const InventoryControlDetailPage = () => {
                     <div className="bg-gradient-to-br from-[#fff0e5] via-[#f8eaff] to-[#e6e9ff] rounded-xl border border-[#e5e7eb] shadow-sm p-6 h-full flex flex-col justify-between gap-5">
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="text-[13px] text-gray-500 font-medium mb-1">Total Value Impact</div>
-                          <div className="text-[22px] font-medium text-gray-900">₹1,800.00</div>
+                          <div className="text-[13px] text-gray-500 font-medium mb-1">Total Items Impacted</div>
+                          <div className="text-[22px] font-medium text-gray-900">{details.items?.length || 0}</div>
                         </div>
                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ff4d4d] to-[#9b27b0] flex items-center justify-center shadow-sm">
                            <TrendingUp className="w-5 h-5 text-white" />
@@ -240,8 +263,8 @@ const InventoryControlDetailPage = () => {
                       
                       <div className="flex justify-between items-start mt-2">
                         <div>
-                          <div className="text-[13px] text-gray-500 font-medium mb-1">Quantity Adjusted</div>
-                          <div className="text-[22px] font-medium text-gray-900">+50 Kg</div>
+                          <div className="text-[13px] text-gray-500 font-medium mb-1">Custom Reference</div>
+                          <div className="text-[16px] font-medium text-gray-900">{details.customReference || '-'}</div>
                         </div>
                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ff4d4d] to-[#9b27b0] flex items-center justify-center shadow-sm">
                            <Box className="w-5 h-5 text-white" />
@@ -253,7 +276,7 @@ const InventoryControlDetailPage = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <div className="text-[13px] text-gray-500 font-medium mb-2">Status</div>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-[#a7f3d0] text-[#047857]">Adjusted</span>
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-[#a7f3d0] text-[#047857]">{details.status}</span>
                         </div>
                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ff4d4d] to-[#9b27b0] flex items-center justify-center shadow-sm">
                            <ShieldCheck className="w-5 h-5 text-white" />
@@ -276,14 +299,20 @@ const InventoryControlDetailPage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td className="pt-3 px-4">
-                            <div className="text-[13px] font-bold text-blue-500 mb-0.5">180 GSM - NS</div>
-                            <div className="text-[11px] text-gray-400">SKU: 180GSM-NS-REE</div>
-                          </td>
-                          <td className="pt-3 px-4 text-[13px] font-bold text-gray-900">50 (Kg)</td>
-                          <td className="pt-3 px-4 text-[13px] font-bold text-gray-900">₹36.00</td>
-                        </tr>
+                        {details.items?.map(item => (
+                          <tr key={item.itemId}>
+                            <td className="pt-3 px-4">
+                              <div className="text-[13px] font-bold text-blue-500 mb-0.5">{item.itemName}</div>
+                              <div className="text-[11px] text-gray-400">SKU: {item.itemCode || '-'}</div>
+                            </td>
+                            <td className="pt-3 px-4 text-[13px] font-bold text-gray-900">
+                              {details.type === 'QUANTITY' ? `${item.quantityAdjusted}` : '-'}
+                            </td>
+                            <td className="pt-3 px-4 text-[13px] font-bold text-gray-900">
+                              {details.type === 'QUANTITY' ? `₹${item.costPrice || 0}` : `₹${item.valueAdjusted || 0}`}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -324,6 +353,8 @@ const InventoryControlDetailPage = () => {
 
               </div>
             </div>
+            </>
+            )}
           </div>
         </div>
       </div>

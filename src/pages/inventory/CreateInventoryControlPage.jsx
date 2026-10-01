@@ -1,10 +1,125 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Store, Boxes, GripVertical, Box, Trash2, Plus, Upload, Bookmark, FileText, List } from 'lucide-react';
+import { getInventoryItems } from '../../services/inventoryItemListApi';
+import { createInventoryAdjustment } from '../../services/createInventoryAdjustmentApi';
 
 const CreateInventoryControlPage = () => {
   const navigate = useNavigate();
-  const [modeOfAdjustment, setModeOfAdjustment] = useState('Quantity Adjustment');
+  const [modeOfAdjustment, setModeOfAdjustment] = useState('QUANTITY');
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [accountId, setAccountId] = useState('');
+  const [reason, setReason] = useState('');
+  const [description, setDescription] = useState('');
+  
+  const [items, setItems] = useState([
+    { item_name: '', inv_item_id: '', quantity_available: 0, new_quantity_on_hand: 0, quantity_adjusted: 0, previous_value: 0, new_value: 0, value_adjusted: 0 }
+  ]);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await getInventoryItems({ limit: 100 });
+        setInventoryItems(response.data || []);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
+    };
+    fetchItems();
+  }, []);
+
+  const handleAddItem = () => {
+    setItems([...items, { item_name: '', inv_item_id: '', quantity_available: 0, new_quantity_on_hand: 0, quantity_adjusted: 0, previous_value: 0, new_value: 0, value_adjusted: 0 }]);
+  };
+
+  const handleRemoveItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...items];
+    newItems[index][field] = value;
+    
+    if (field === 'inv_item_id') {
+      const selectedItem = inventoryItems.find(i => String(i.invItemId) === String(value));
+      if (selectedItem) {
+        if (modeOfAdjustment === 'QUANTITY') {
+          newItems[index].quantity_available = selectedItem.openingStock || 0;
+          newItems[index].new_quantity_on_hand = selectedItem.openingStock || 0;
+          newItems[index].quantity_adjusted = 0;
+        } else {
+          newItems[index].previous_value = 0;
+          newItems[index].new_value = 0;
+          newItems[index].value_adjusted = 0;
+        }
+      }
+    }
+    
+    if (modeOfAdjustment === 'QUANTITY' && (field === 'new_quantity_on_hand' || field === 'quantity_adjusted' || field === 'quantity_available')) {
+        if (field === 'new_quantity_on_hand') {
+            const newQty = parseFloat(value) || 0;
+            newItems[index].quantity_adjusted = newQty - parseFloat(newItems[index].quantity_available || 0);
+        } else if (field === 'quantity_adjusted') {
+            const adj = parseFloat(value) || 0;
+            newItems[index].new_quantity_on_hand = parseFloat(newItems[index].quantity_available || 0) + adj;
+        } else if (field === 'quantity_available') {
+            const qtyAvail = parseFloat(value) || 0;
+            const newQty = parseFloat(newItems[index].new_quantity_on_hand || 0);
+            newItems[index].quantity_adjusted = newQty - qtyAvail;
+        }
+    }
+    
+    if (modeOfAdjustment === 'VALUE' && (field === 'new_value' || field === 'value_adjusted' || field === 'previous_value')) {
+        if (field === 'new_value') {
+            const newVal = parseFloat(value) || 0;
+            newItems[index].value_adjusted = newVal - parseFloat(newItems[index].previous_value || 0);
+        } else if (field === 'value_adjusted') {
+            const adj = parseFloat(value) || 0;
+            newItems[index].new_value = parseFloat(newItems[index].previous_value || 0) + adj;
+        } else if (field === 'previous_value') {
+            const prevVal = parseFloat(value) || 0;
+            const newVal = parseFloat(newItems[index].new_value || 0);
+            newItems[index].value_adjusted = newVal - prevVal;
+        }
+    }
+    
+    setItems(newItems);
+  };
+
+  const handleSave = async (status = 'POSTED') => {
+    try {
+      setIsLoading(true);
+      const payload = {
+        adjustment_mode: modeOfAdjustment,
+        reference_number: referenceNumber,
+        adjustment_date: date,
+        account_id: accountId ? parseInt(accountId) : null,
+        reason: reason,
+        description: description,
+        status: status,
+        items: items.map(item => ({
+            inv_item_id: parseInt(item.inv_item_id),
+            quantity_available: parseFloat(item.quantity_available || 0),
+            new_quantity_on_hand: parseFloat(item.new_quantity_on_hand || 0),
+            quantity_adjusted: parseFloat(item.quantity_adjusted || 0),
+            previous_value: parseFloat(item.previous_value || 0),
+            new_value: parseFloat(item.new_value || 0),
+            value_adjusted: parseFloat(item.value_adjusted || 0),
+        }))
+      };
+      await createInventoryAdjustment(payload);
+      navigate('/inventory/control');
+    } catch (error) {
+      console.error("Save error:", error);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const tabs = [
     { name: 'Items', path: '/inventory', active: false },
@@ -86,26 +201,32 @@ const CreateInventoryControlPage = () => {
                     </label>
                     <div className="flex items-center gap-6">
                       <label className="flex items-center cursor-pointer text-[15px] text-[#1a233a] font-medium">
-                        <div className={`flex items-center justify-center w-5 h-5 rounded-full mr-2.5 transition-all ${modeOfAdjustment === 'Quantity Adjustment' ? 'bg-gradient-to-br from-[#ff3b30] to-[#b82db8]' : 'border border-gray-300'}`}>
-                          {modeOfAdjustment === 'Quantity Adjustment' && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                        <div className={`flex items-center justify-center w-5 h-5 rounded-full mr-2.5 transition-all ${modeOfAdjustment === 'QUANTITY' ? 'bg-gradient-to-br from-[#ff3b30] to-[#b82db8]' : 'border border-gray-300'}`}>
+                          {modeOfAdjustment === 'QUANTITY' && <div className="w-2 h-2 bg-white rounded-full"></div>}
                         </div>
                         <input
                           type="radio"
                           className="hidden"
-                          checked={modeOfAdjustment === 'Quantity Adjustment'}
-                          onChange={() => setModeOfAdjustment('Quantity Adjustment')}
+                          checked={modeOfAdjustment === 'QUANTITY'}
+                          onChange={() => {
+                            setModeOfAdjustment('QUANTITY');
+                            setItems([{ item_name: '', inv_item_id: '', quantity_available: 0, new_quantity_on_hand: 0, quantity_adjusted: 0, previous_value: 0, new_value: 0, value_adjusted: 0 }]);
+                          }}
                         />
                         Quantity Adjustment
                       </label>
                       <label className="flex items-center cursor-pointer text-[15px] text-[#1a233a] font-medium">
-                        <div className={`flex items-center justify-center w-5 h-5 rounded-full mr-2.5 transition-all ${modeOfAdjustment === 'Value Adjustment' ? 'bg-gradient-to-br from-[#ff3b30] to-[#b82db8]' : 'border border-gray-300'}`}>
-                          {modeOfAdjustment === 'Value Adjustment' && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                        <div className={`flex items-center justify-center w-5 h-5 rounded-full mr-2.5 transition-all ${modeOfAdjustment === 'VALUE' ? 'bg-gradient-to-br from-[#ff3b30] to-[#b82db8]' : 'border border-gray-300'}`}>
+                          {modeOfAdjustment === 'VALUE' && <div className="w-2 h-2 bg-white rounded-full"></div>}
                         </div>
                         <input
                           type="radio"
                           className="hidden"
-                          checked={modeOfAdjustment === 'Value Adjustment'}
-                          onChange={() => setModeOfAdjustment('Value Adjustment')}
+                          checked={modeOfAdjustment === 'VALUE'}
+                          onChange={() => {
+                            setModeOfAdjustment('VALUE');
+                            setItems([{ item_name: '', inv_item_id: '', quantity_available: 0, new_quantity_on_hand: 0, quantity_adjusted: 0, previous_value: 0, new_value: 0, value_adjusted: 0 }]);
+                          }}
                         />
                         Value Adjustment
                       </label>
@@ -117,15 +238,24 @@ const CreateInventoryControlPage = () => {
                       <label className="block text-[13px] font-bold text-[#1a233a] mb-1.5">
                         Reference Number
                       </label>
-                      <input type="text" className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" />
+                      <input 
+                        type="text" 
+                        value={referenceNumber}
+                        onChange={(e) => setReferenceNumber(e.target.value)}
+                        className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white" 
+                      />
                     </div>
                     <div>
                       <label className="block text-[13px] font-bold text-[#1a233a] mb-1.5">
                         Date <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <input type="text" placeholder="Select Category" className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white placeholder-gray-400" />
-                        <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
+                        <input 
+                          type="date" 
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
+                          className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white placeholder-gray-400" 
+                        />
                       </div>
                     </div>
                     <div>
@@ -133,11 +263,15 @@ const CreateInventoryControlPage = () => {
                         Account <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500">
+                        <select 
+                          value={accountId}
+                          onChange={(e) => setAccountId(e.target.value)}
+                          className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500"
+                        >
                           <option value="">Select Account</option>
-                          <option value="Inventory Asset">Inventory Asset</option>
-                          <option value="Cost of Goods Sold">Cost of Goods Sold</option>
-                          <option value="Inventory Adjustment">Inventory Adjustment</option>
+                          <option value="1">Inventory Asset</option>
+                          <option value="2">Cost of Goods Sold</option>
+                          <option value="3">Inventory Adjustment</option>
                         </select>
                         <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
@@ -147,7 +281,11 @@ const CreateInventoryControlPage = () => {
                         Reason <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <select className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500">
+                        <select 
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          className="w-full border border-gray-200 rounded-md shadow-sm px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 appearance-none bg-white text-gray-500"
+                        >
                           <option value="">Select Reason</option>
                           <option value="Stock on fire">Stock on fire</option>
                           <option value="Stolen goods">Stolen goods</option>
@@ -166,10 +304,12 @@ const CreateInventoryControlPage = () => {
                     </label>
                     <div className="relative">
                       <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
                         className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-2 text-[13px] focus:outline-none focus:border-blue-500 bg-white min-h-[60px] resize-y placeholder-gray-400"
                         placeholder="Enter description..."
                       ></textarea>
-                      <div className="absolute bottom-2 right-3 text-[11px] text-gray-400">0 / 500 Character</div>
+                      <div className="absolute bottom-2 right-3 text-[11px] text-gray-400">{description.length} / 500 Character</div>
                     </div>
                   </div>
                 </div>
@@ -251,45 +391,86 @@ const CreateInventoryControlPage = () => {
                     <thead>
                       <tr className="bg-[#f9fafb] border-b border-gray-100 text-[12px]">
                         <th className="py-2.5 px-4 font-semibold text-gray-500 w-[40%]">Item Details</th>
-                        <th className="py-2.5 px-4 font-semibold text-gray-500 text-center w-[20%]">Quantity Available</th>
-                        <th className="py-2.5 px-4 font-semibold text-gray-500 text-center w-[20%]">New Quantity On Hand</th>
-                        <th className="py-2.5 px-4 font-semibold text-gray-500 w-[20%]">Quantity Adjusted</th>
+                        <th className="py-2.5 px-4 font-semibold text-gray-500 text-center w-[20%]">{modeOfAdjustment === 'QUANTITY' ? 'Quantity Available' : 'Previous Value'}</th>
+                        <th className="py-2.5 px-4 font-semibold text-gray-500 text-center w-[20%]">{modeOfAdjustment === 'QUANTITY' ? 'New Quantity On Hand' : 'New Value'}</th>
+                        <th className="py-2.5 px-4 font-semibold text-gray-500 w-[20%]">Adjusted</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-b border-gray-100 last:border-0">
-                        <td className="py-3 px-4 flex items-center gap-3">
+                      {items.map((item, index) => (
+                      <tr key={index} className="border-b border-gray-100 last:border-0">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
                           <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
-                          <div className="w-7 h-7 rounded-md bg-gray-50 flex items-center justify-center border border-gray-200">
+                          <div className="w-7 h-7 rounded-md bg-gray-50 flex items-center justify-center border border-gray-200 shrink-0">
                             <Box className="w-3.5 h-3.5 text-[#1a233a]" />
                           </div>
-                          <input type="text" className="flex-1 border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 bg-white" />
-                        </td>
-                        <td className="py-3 px-4">
-                          <input type="text" className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 bg-white text-center" />
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center border border-gray-200 rounded-md shadow-inner overflow-hidden bg-white">
-                            <button className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 border-r border-gray-200">-</button>
-                            <input type="text" className="w-full text-center text-[13px] py-1.5 outline-none" />
-                            <button className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 border-l border-gray-200">+</button>
+                          <div className="relative flex-1">
+                            <select
+                              value={item.inv_item_id}
+                              onChange={(e) => handleItemChange(index, 'inv_item_id', e.target.value)}
+                              className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 bg-white appearance-none pr-8"
+                            >
+                              <option value="">Select item</option>
+                              {inventoryItems.map((invItem) => (
+                                <option key={invItem.invItemId} value={invItem.invItemId}>
+                                  {invItem.itemName || `Item #${invItem.invItemId}`}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-2 w-4 h-4 text-gray-400 pointer-events-none" />
                           </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <input 
+                            type="number" 
+                            value={modeOfAdjustment === 'QUANTITY' ? item.quantity_available : item.previous_value}
+                            onChange={(e) => handleItemChange(index, modeOfAdjustment === 'QUANTITY' ? 'quantity_available' : 'previous_value', e.target.value)}
+                            className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 bg-white text-center" 
+                          />
+                        </td>
+                        <td className="py-3 px-4">
+                          <input 
+                            type="number" 
+                            value={modeOfAdjustment === 'QUANTITY' ? item.new_quantity_on_hand : item.new_value}
+                            onChange={(e) => handleItemChange(index, modeOfAdjustment === 'QUANTITY' ? 'new_quantity_on_hand' : 'new_value', e.target.value)}
+                            className="w-full border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 bg-white text-center" 
+                          />
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <input type="text" placeholder="Eg. +10 -10" className="flex-1 border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 placeholder-gray-400 bg-white" />
-                            <button className="w-7 h-7 rounded-md bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0">
+                            <input 
+                              type="number" 
+                              value={modeOfAdjustment === 'QUANTITY' ? item.quantity_adjusted : item.value_adjusted}
+                              onChange={(e) => handleItemChange(index, modeOfAdjustment === 'QUANTITY' ? 'quantity_adjusted' : 'value_adjusted', e.target.value)}
+                              placeholder="Eg. +10 -10" 
+                              className="flex-1 border border-gray-200 rounded-md shadow-inner px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-400 placeholder-gray-400 bg-white" 
+                            />
+                            <button 
+                              onClick={() => handleRemoveItem(index)}
+                              className="w-7 h-7 rounded-md bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0"
+                            >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </td>
                       </tr>
+                      ))}
+                      {items.length === 0 && (
+                        <tr>
+                          <td colSpan="4" className="text-center py-6 text-gray-400 text-sm">Click 'Add New Row' to add items.</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <button className="flex items-center gap-2 bg-[#1a233a] text-white px-3.5 py-1.5 rounded-md text-[12px] font-medium hover:bg-gray-800 transition-colors">
+                  <button 
+                    onClick={handleAddItem}
+                    className="flex items-center gap-2 bg-[#1a233a] text-white px-3.5 py-1.5 rounded-md text-[12px] font-medium hover:bg-gray-800 transition-colors"
+                  >
                     Add New Row <Plus className="w-3.5 h-3.5" />
                   </button>
                   <span className="text-[11px] text-gray-500">Items Selected Dynamically Synchronize With Central Ledger Accounts Automatically.</span>
@@ -311,15 +492,20 @@ const CreateInventoryControlPage = () => {
         >
           Cancel
         </button>
-        <button className="px-4 py-1.5 rounded-lg bg-gray-100 text-[13px] font-semibold text-gray-700 hover:bg-gray-200 transition-colors flex items-center shadow-sm">
+        <button 
+          onClick={() => handleSave('DRAFT')}
+          disabled={isLoading}
+          className="px-4 py-1.5 rounded-lg bg-gray-100 text-[13px] font-semibold text-gray-700 hover:bg-gray-200 transition-colors flex items-center shadow-sm disabled:opacity-50"
+        >
           <Bookmark className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
           Save Draft
         </button>
         <button
-          onClick={() => navigate('/inventory/control')}
-          className="px-6 py-1.5 rounded-lg bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white text-[13px] font-bold shadow-sm hover:opacity-90 transition-colors"
+          onClick={() => handleSave('POSTED')}
+          disabled={isLoading}
+          className="px-6 py-1.5 rounded-lg bg-gradient-to-r from-[#ff7a59] via-[#d54a88] to-[#402de8] text-white text-[13px] font-bold shadow-sm hover:opacity-90 transition-colors disabled:opacity-50"
         >
-          Save
+          {isLoading ? 'Saving...' : 'Save'}
         </button>
       </div>
     </main>
