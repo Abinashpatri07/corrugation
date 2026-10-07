@@ -1,99 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, MoreHorizontal, ChevronDown, MapPin } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
-/*
- * =========================================================
- * DUMMY MACHINE DATA
- * =========================================================
- * This is temporary data.
- * Later this will be replaced with backend/API data.
- * =========================================================
- */
-const machineData = [
-  {
-    id: 1,
-    machineCode: 'MC-001',
-    machineName: 'Corrugator Line 1',
-    location: 'Plant A - Bay 1',
-    capacity: '160 Hrs',
-    oee: 84,
-    nextMaintenance: '14 Oct 2026',
-    status: 'Running',
-  },
-  {
-    id: 2,
-    machineCode: 'MC-002',
-    machineName: 'Flexo Printer 2',
-    location: 'Plant A - Bay 2',
-    capacity: '160 Hrs',
-    oee: 54,
-    nextMaintenance: '28 Oct 2026',
-    status: 'Idle',
-  },
-  {
-    id: 3,
-    machineCode: 'MC-003',
-    machineName: 'Die Cutter 1',
-    location: 'Plant A - Bay 3',
-    capacity: '160 Hrs',
-    oee: 31,
-    nextMaintenance: 'Overdue',
-    status: 'Down',
-  },
-  {
-    id: 4,
-    machineCode: 'MC-004',
-    machineName: 'Stitching Machine 4',
-    location: 'Plant B - Bay 1',
-    capacity: '144 Hrs',
-    oee: 76,
-    nextMaintenance: 'In Progress',
-    status: 'Maintenance',
-  },
-  {
-    id: 5,
-    machineCode: 'MC-005',
-    machineName: 'Folder Gluer 5',
-    location: 'Plant B - Bay 2',
-    capacity: '152 Hrs',
-    oee: 88,
-    nextMaintenance: '05 Nov 2026',
-    status: 'Running',
-  },
-  {
-    id: 6,
-    machineCode: 'MC-006',
-    machineName: 'Paper Cutting Machine',
-    location: 'Plant B - Bay 3',
-    capacity: '150 Hrs',
-    oee: 72,
-    nextMaintenance: '12 Nov 2026',
-    status: 'Running',
-  },
-  {
-    id: 7,
-    machineCode: 'MC-007',
-    machineName: 'Lamination Machine',
-    location: 'Plant C - Bay 1',
-    capacity: '168 Hrs',
-    oee: 81,
-    nextMaintenance: '20 Nov 2026',
-    status: 'Running',
-  },
-  {
-    id: 8,
-    machineCode: 'MC-008',
-    machineName: 'Slotting Machine',
-    location: 'Plant C - Bay 2',
-    capacity: '160 Hrs',
-    oee: 67,
-    nextMaintenance: '25 Nov 2026',
-    status: 'Idle',
-  },
-];
-
-
+import { getMachines } from "../../services/machineListApi";
 /*
  * =========================================================
  * OEE PROGRESS BAR
@@ -178,9 +87,78 @@ const MachinePage = () => {
   const navigate = useNavigate();
 
   /*
+=========================================================
+MACHINE DATA FROM BACKEND
+=========================================================
+*/
+
+  const [machineData, setMachineData] = useState([]);
+
+
+  /*
+  =========================================================
+  LOADING STATE
+  =========================================================
+  */
+
+  const [loading, setLoading] = useState(true);
+
+
+  /*
+  =========================================================
+  ERROR STATE
+  =========================================================
+  */
+
+  const [error, setError] = useState('');
+
+  /*
    * Selected machine IDs
    */
   const [selectedMachines, setSelectedMachines] = useState([]);
+
+  /*
+=========================================================
+LOAD MACHINES FROM BACKEND
+=========================================================
+*/
+
+  useEffect(() => {
+
+    const loadMachines = async () => {
+
+      try {
+
+        setLoading(true);
+
+        setError('');
+
+        const machines = await getMachines();
+
+        setMachineData(machines);
+
+      } catch (error) {
+
+        console.error(
+          'Failed to load machines:',
+          error
+        );
+
+        setError(
+          error.message ||
+          'Failed to load machines'
+        );
+
+      } finally {
+
+        setLoading(false);
+      }
+    };
+
+
+    loadMachines();
+
+  }, []);
 
 
   /*
@@ -352,153 +330,248 @@ const MachinePage = () => {
                 ================================================= */}
             <tbody>
 
-              {machineData.map((machine) => (
+              {/* =====================================================
+        LOADING
+    ===================================================== */}
 
-                <tr
-                  key={machine.id}
-                  className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-[13px]"
-                >
+              {loading && (
 
-                  {/* =================================================
-                      CHECKBOX
-                      ================================================= */}
+                <tr>
+
                   <td
-                    className="py-4 pl-4 pr-3 text-center"
-                    onClick={(e) => e.stopPropagation()}
+                    colSpan="8"
+                    className="py-10 text-center text-[13px] text-gray-500"
                   >
-
-                    <input
-                      type="checkbox"
-                      checked={selectedMachines.includes(machine.id)}
-                      onChange={() =>
-                        handleSelectMachine(machine.id)
-                      }
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
-                    />
-
-                  </td>
-
-
-                  {/* =================================================
-                      MACHINE CODE
-                      ================================================= */}
-                  <td
-                    onClick={() =>
-                      navigate(`/machine/${machine.id}`)
-                    }
-                    className="py-4 px-3 text-blue-600 font-medium cursor-pointer hover:underline"
-                  >
-
-                    {machine.machineCode}
-
-                  </td>
-
-
-                  {/* =================================================
-                      MACHINE NAME
-                      ================================================= */}
-                  <td
-                    onClick={() =>
-                      navigate(`/machine/${machine.id}`)
-                    }
-                    className="py-4 px-3 text-[#1a233a] font-medium cursor-pointer"
-                  >
-
-                    {machine.machineName}
-
-                  </td>
-
-
-                  {/* =================================================
-                      LOCATION
-                      ================================================= */}
-                  <td className="py-4 px-3 text-[#1a233a] font-medium">
-
-                    <div className="flex items-center gap-1.5">
-
-                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
-
-                      <span>
-                        {machine.location}
-                      </span>
-
-                    </div>
-
-                  </td>
-
-
-                  {/* =================================================
-                      CAPACITY
-                      ================================================= */}
-                  <td className="py-4 px-3 text-[#1a233a] font-medium">
-
-                    {machine.capacity}
-
-                  </td>
-
-
-                  {/* =================================================
-                      OEE
-                      ================================================= */}
-                  <td className="py-4 px-3">
-
-                    <div className="flex flex-col">
-
-                      <span className="text-[#1a233a] font-medium">
-                        {machine.oee}%
-                      </span>
-
-                      <ProgressBar
-                        value={machine.oee}
-                      />
-
-                    </div>
-
-                  </td>
-
-
-                  {/* =================================================
-                      NEXT MAINTENANCE
-                      ================================================= */}
-                  <td className="py-4 px-3 text-[#1a233a] font-medium">
-
-                    {machine.nextMaintenance === 'Overdue' ? (
-
-                      <span className="text-red-500 font-medium">
-                        {machine.nextMaintenance}
-                      </span>
-
-                    ) : machine.nextMaintenance === 'In Progress' ? (
-
-                      <span className="text-purple-600 font-medium">
-                        {machine.nextMaintenance}
-                      </span>
-
-                    ) : (
-
-                      <span>
-                        {machine.nextMaintenance}
-                      </span>
-
-                    )}
-
-                  </td>
-
-
-                  {/* =================================================
-                      STATUS
-                      ================================================= */}
-                  <td className="py-4 pr-4 pl-3">
-
-                    <StatusPill
-                      status={machine.status}
-                    />
-
+                    Loading machines...
                   </td>
 
                 </tr>
 
-              ))}
+              )}
+
+
+              {/* =====================================================
+        ERROR
+    ===================================================== */}
+
+              {!loading && error && (
+
+                <tr>
+
+                  <td
+                    colSpan="8"
+                    className="py-10 text-center text-[13px] text-red-500"
+                  >
+                    {error}
+                  </td>
+
+                </tr>
+
+              )}
+
+
+              {/* =====================================================
+        NO DATA
+    ===================================================== */}
+
+              {!loading &&
+                !error &&
+                machineData.length === 0 && (
+
+                  <tr>
+
+                    <td
+                      colSpan="8"
+                      className="py-10 text-center text-[13px] text-gray-500"
+                    >
+                      No machines found
+                    </td>
+
+                  </tr>
+
+                )
+              }
+
+
+              {/* =====================================================
+        MACHINE DATA FROM BACKEND
+    ===================================================== */}
+
+              {!loading &&
+                !error &&
+                machineData.map((machine) => (
+
+                  <tr
+                    key={
+                      machine.machine_id ??
+                      machine.machineId ??
+                      machine.id
+                    }
+                    className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors text-[13px]"
+                  >
+
+                    {/* CHECKBOX */}
+
+                    <td
+                      className="py-4 pl-4 pr-3 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+
+                      <input
+                        type="checkbox"
+                        checked={selectedMachines.includes(
+                          machine.machine_id ??
+                          machine.machineId ??
+                          machine.id
+                        )}
+                        onChange={() =>
+                          handleSelectMachine(
+                            machine.machine_id ??
+                            machine.machineId ??
+                            machine.id
+                          )
+                        }
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
+                      />
+
+                    </td>
+
+
+                    {/* MACHINE CODE */}
+
+                    <td
+                      onClick={() =>
+                        navigate(
+                          `/machine/${machine.machine_id ??
+                          machine.machineId ??
+                          machine.id
+                          }`
+                        )
+                      }
+
+                      className="py-4 px-3 text-blue-600 font-medium cursor-pointer hover:underline"
+                    >
+                      {machine.machineCode}
+                    </td>
+
+
+                    {/* MACHINE NAME */}
+
+                    < td
+                      onClick={() =>
+                        navigate(
+                          `/machine/${machine.machine_id ??
+                          machine.machineId ??
+                          machine.id
+                          }`
+                        )
+                      }
+
+                      className="py-4 px-3 text-[#1a233a] font-medium cursor-pointer"
+                    >
+                      {machine.machineName}
+                    </td>
+
+
+                    {/* LOCATION */}
+
+                    <td className="py-4 px-3 text-[#1a233a] font-medium">
+
+                      <div className="flex items-center gap-1.5">
+
+                        <MapPin
+                          className="w-3.5 h-3.5 text-gray-400"
+                        />
+
+                        <span>
+                          {machine.location}
+                        </span>
+
+                      </div>
+
+                    </td>
+
+
+                    {/* CAPACITY */}
+
+                    <td className="py-4 px-3 text-[#1a233a] font-medium">
+
+                      {machine.capacity}
+
+                    </td>
+
+
+                    {/* OEE */}
+
+                    <td className="py-4 px-3">
+
+                      {machine.oee !== null &&
+                        machine.oee !== undefined ? (
+
+                        <div className="flex flex-col">
+
+                          <span className="text-[#1a233a] font-medium">
+                            {machine.oee}%
+                          </span>
+
+                          <ProgressBar
+                            value={machine.oee}
+                          />
+
+                        </div>
+
+                      ) : (
+
+                        <span className="text-gray-400">
+                          -
+                        </span>
+
+                      )}
+
+                    </td>
+
+
+                    {/* NEXT MAINTENANCE */}
+
+                    <td className="py-4 px-3 text-[#1a233a] font-medium">
+
+                      {machine.nextMaintenance === 'Overdue' ? (
+
+                        <span className="text-red-500 font-medium">
+                          {machine.nextMaintenance}
+                        </span>
+
+                      ) : machine.nextMaintenance === 'In Progress' ? (
+
+                        <span className="text-purple-600 font-medium">
+                          {machine.nextMaintenance}
+                        </span>
+
+                      ) : (
+
+                        <span>
+                          {machine.nextMaintenance}
+                        </span>
+
+                      )}
+
+                    </td>
+
+
+                    {/* STATUS */}
+
+                    <td className="py-4 pr-4 pl-3">
+
+                      <StatusPill
+                        status={machine.status}
+                      />
+
+                    </td>
+
+                  </tr>
+
+                ))
+              }
 
             </tbody>
 
@@ -513,7 +586,7 @@ const MachinePage = () => {
         <div className="px-6 py-4 border-t border-gray-100 bg-white text-xs text-gray-500 flex justify-between items-center mt-auto">
 
           <span>
-            Showing {machineData.length} of {machineData.length} machine(s)
+            Showing {machineData.length} machine(s)
           </span>
 
           <div className="flex items-center gap-2">
@@ -540,9 +613,9 @@ const MachinePage = () => {
 
         </div>
 
-      </div>
+      </div >
 
-    </main>
+    </main >
   );
 };
 
