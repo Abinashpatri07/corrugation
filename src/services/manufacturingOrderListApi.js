@@ -57,3 +57,4 @@ export const getManufacturingOrderList = async ({
 export default {
   getManufacturingOrderList,
 };
+
