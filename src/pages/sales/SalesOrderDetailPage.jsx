@@ -456,6 +456,11 @@ import {
   HandCoins
 } from 'lucide-react';
 
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:3000/api/v1';
+
 const SalesOrderDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -474,7 +479,9 @@ const SalesOrderDetailPage = () => {
         setAllSalesOrders(listData);
 
         if (id) {
-          const detailRes = await fetch(`http://localhost:3000/api/v1/sales-orders/${id}`);
+          const detailRes = await fetch(
+            `${API_BASE_URL}/sales-orders/${id}`
+          );
           if (detailRes.ok) {
             const detailData = await detailRes.json();
             setActiveOrder(detailData);

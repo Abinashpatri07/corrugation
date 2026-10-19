@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:3000/api/v1';
 const QuotesTable = () => {
   const navigate = useNavigate();
   const [quotes, setQuotes] = useState([]);
@@ -9,7 +13,7 @@ const QuotesTable = () => {
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/v1/quotes');
+        const response = await fetch(`${API_BASE_URL}/quotes`);
         const data = await response.json();
         if (data.success) {
           setQuotes(data.data);
@@ -54,7 +58,7 @@ const QuotesTable = () => {
                 <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5" />
               </td>
               <td className="py-4 px-6 text-[#1a233a] font-medium">{quote.date}</td>
-              <td 
+              <td
                 className="py-4 px-6 text-blue-600 font-medium cursor-pointer hover:underline"
                 onClick={() => navigate(`/sales/quotes/${quote.id}`)}
               >

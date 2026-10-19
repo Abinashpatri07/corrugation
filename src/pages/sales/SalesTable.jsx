@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:3000/api/v1';
 const SalesTable = () => {
   const navigate = useNavigate();
   const [salesOrders, setSalesOrders] = useState([]);
@@ -9,7 +13,7 @@ const SalesTable = () => {
   useEffect(() => {
     const fetchSalesOrders = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/v1/sales-orders');
+        const res = await fetch(`${API_BASE_URL}/sales-orders`);
         const data = await res.json();
         setSalesOrders(data);
       } catch (err) {
@@ -49,7 +53,7 @@ const SalesTable = () => {
                 <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5" />
               </td>
               <td className="py-4 px-6 text-[#1a233a] font-medium">{order.date}</td>
-              <td 
+              <td
                 className="py-4 px-6 text-blue-600 font-medium cursor-pointer hover:underline whitespace-nowrap"
                 onClick={() => navigate(`/sales/order/${order.id}`)}
               >
