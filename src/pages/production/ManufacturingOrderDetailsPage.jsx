@@ -1111,7 +1111,7 @@ const ManufacturingOrderDetailsPage = () => {
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-[13px] font-medium text-gray-400">Expected Shipment</span>
-                              <span className="text-[13px] font-bold text-[#111827]">{formatDate(order?.expected_shipment_date)}</span>
+                              <span className="text-[13px] font-bold text-[#111827]">18/11/2026</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-[13px] font-medium text-gray-400">
@@ -1411,7 +1411,7 @@ const ManufacturingOrderDetailsPage = () => {
                             </div>
                           </div>
                           <span className="text-[14px] font-medium text-gray-900 mb-1">Estimate Time</span>
-                          <span className="text-[13px] font-medium text-[#d39f15] mb-1">{valueOrDash(schedule?.estimated_hours)}</span>
+                          <span className="text-[13px] font-medium text-[#d39f15] mb-1">10.00</span>
                         </div>
 
                         <div className="flex flex-col items-center relative z-10 flex-1">

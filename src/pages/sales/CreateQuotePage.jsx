@@ -1128,45 +1128,45 @@ const CreateQuotePage = () => {
         alert('Please enter length, width, and height');
         return;
       }
-      
+
       if (!topPaperGsm || !linerGsm || !fluteGsm) {
         alert('Please enter GSM values for Top Paper, Liner, and Flute');
         return;
       }
-      
+
       const response = await fetch('http://localhost:3000/api/v1/quotes/calculate-board', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ length, width, height, qty: quantity, ply: plyType, topGsm: topPaperGsm, linerGsm: linerGsm, fluteGsm: fluteGsm, paperType, topBf: topPaperBf, linerBf: linerBf, fluteBf: fluteBf })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success && data.data && data.data.boardSize) {
         const [l, w] = data.data.boardSize;
         const pieces = data.data.pieces;
         const ups = data.data.ups;
         const papers = data.data.papers;
         const twoPly = data.data.twoPly;
-        
+
         setBoardSize(`${l} x ${w}`);
         setBoardFactor(data.data.boardFactor ? data.data.boardFactor.toString() : '');
         setNumberOfPaper(papers ? papers.toString() : '');
         setNumberOfTwoPly(twoPly ? twoPly.toString() : '');
-        
+
         if (data.data.materialAvailability) {
-            setMaterialAvailabilityData(data.data.materialAvailability);
+          setMaterialAvailabilityData(data.data.materialAvailability);
         } else {
-            setMaterialAvailabilityData([]);
+          setMaterialAvailabilityData([]);
         }
-        
+
         if (data.data.weight) {
-            setBoxWeight(`${data.data.weight.grossWeightKg} kg`);
-            const totalKg = (data.data.weight.grossWeightKg * Number(quantity || 1)).toFixed(2);
-            setTotalWeight(`${totalKg} kg`);
+          setBoxWeight(`${data.data.weight.grossWeightKg} kg`);
+          const totalKg = (data.data.weight.grossWeightKg * Number(quantity || 1)).toFixed(2);
+          setTotalWeight(`${totalKg} kg`);
         } else {
-            setBoxWeight('');
-            setTotalWeight('');
+          setBoxWeight('');
+          setTotalWeight('');
         }
       } else {
         alert(data.message || 'Calculation failed');
@@ -1184,14 +1184,14 @@ const CreateQuotePage = () => {
     if (!itemName) newErrors.itemName = "Item name is required";
     if (!itemDescription) newErrors.itemDescription = "Item description is required";
     if (!quantity) newErrors.quantity = "Quantity is required";
-    
+
     if (!boxType) newErrors.boxType = "Box type is required";
     if (!plyType) newErrors.plyType = "Ply type is required";
-    
+
     if (!length) newErrors.length = "Length is required";
     if (!width) newErrors.width = "Width is required";
     if (!height) newErrors.height = "Height is required";
-    
+
     if (!topPaperGsm) newErrors.topPaperGsm = "Top GSM is required";
     if (!linerGsm) newErrors.linerGsm = "Liner GSM is required";
     if (!fluteGsm) newErrors.fluteGsm = "Flute GSM is required";
@@ -1218,6 +1218,7 @@ const CreateQuotePage = () => {
         salesMan: 1, // Defaulting to Manoj Kumar (id 1)
         projectName: '', // Can be extracted if a state was added for this
         referenceNo: '', // Can be extracted if a state was added for this
+
         items: [
           {
             itemName: itemName,
@@ -1227,9 +1228,25 @@ const CreateQuotePage = () => {
             height: Number(height),
             quantity: Number(quantity) || 1,
             plyType: Number(plyType?.replace(/\D/g, '')) || 3,
+
             topGsm: Number(topPaperGsm),
             linerGsm: Number(linerGsm),
             fluteGsm: Number(fluteGsm),
+
+            // BF values entered in the Quote Creation form
+            topBf: Number(topPaperBf) || 0,
+            linerBf: Number(linerBf) || 0,
+            fluteBf: Number(fluteBf) || 0,
+
+
+            // Overall calculated BF displayed in Quote Details
+            bf: Number(boardFactor) || 0,
+
+
+            // Transfer Board Calculation values to the quote
+            topPaperNumber: Number(numberOfPaper) || 0,
+            twoPlyNumber: Number(numberOfTwoPly) || 0,
+
             boardSize: boardSize,
             boxWeight: parseFloat(boxWeight) || 0,
             totalWeight: parseFloat(totalWeight) || 0,
@@ -1238,6 +1255,7 @@ const CreateQuotePage = () => {
             boxSize: boxSize
           }
         ]
+
       };
 
       const response = await fetch('http://localhost:3000/api/v1/quotes', {
@@ -1245,7 +1263,7 @@ const CreateQuotePage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       const data = await response.json();
       if (data.success) {
         setShowPreview(false);
@@ -1299,12 +1317,12 @@ const CreateQuotePage = () => {
   const parsedBoxWeight = parseFloat(boxWeight) || 0;
   const parsedTotalWeight = parseFloat(totalWeight) || 0;
   const parsedQuantity = parseInt(quantity) || 1;
-  
+
   const calculatedBoxValue = parsedBoxWeight * 50;
   const calculatedSubTotal = calculatedBoxValue * parsedQuantity;
   const calculatedGST = calculatedSubTotal * 0.18;
   const calculatedTotal = calculatedSubTotal + calculatedGST;
-  
+
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val);
 
   return (
@@ -1318,8 +1336,8 @@ const CreateQuotePage = () => {
               key={tab.name}
               onClick={() => navigate(tab.path)}
               className={`flex items-center gap-1 px-4 py-2 text-[13px] border-b-2 transition-colors whitespace-nowrap ${tab.name === 'Quotes'
-                  ? 'border-black text-black font-bold'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-black text-black font-bold'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
               {tab.name}
@@ -1346,8 +1364,8 @@ const CreateQuotePage = () => {
                 return (
                   <div key={step.name} className="flex flex-col items-center px-2 relative">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 relative z-10 ${step.active
-                        ? 'bg-gradient-to-br from-[#ff6b6b] via-[#9333ea] to-[#4338ca] text-white shadow-md'
-                        : 'bg-white border-2 border-gray-200 text-gray-400'
+                      ? 'bg-gradient-to-br from-[#ff6b6b] via-[#9333ea] to-[#4338ca] text-white shadow-md'
+                      : 'bg-white border-2 border-gray-200 text-gray-400'
                       }`}>
                       <Icon className="w-3.5 h-3.5" strokeWidth={step.active ? 2.5 : 2} />
                     </div>
@@ -1379,7 +1397,7 @@ const CreateQuotePage = () => {
             <div className="mb-4">
               <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Search Customer <span className="text-red-500">*</span></label>
               <div className="relative">
-                <select 
+                <select
                   className={`w-full border ${errors.customer ? 'border-red-500' : 'border-gray-200'} rounded-md px-3 py-2 text-[13px] text-gray-600 focus:outline-none focus:border-blue-500 appearance-none bg-white shadow-sm`}
                   value={selectedCustomer}
                   onChange={(e) => {
@@ -1443,11 +1461,10 @@ const CreateQuotePage = () => {
                     <button
                       key={type}
                       onClick={() => setOrderType(type)}
-                      className={`text-[11px] font-semibold px-4 py-1.5 rounded-full shadow-sm transition-all duration-200 border ${
-                        orderType === type
-                          ? 'text-[#f97316] bg-[#fff7ed] border-[#fdba74]/50 scale-105'
-                          : 'text-gray-500 bg-white border-gray-200 hover:bg-gray-50'
-                      }`}
+                      className={`text-[11px] font-semibold px-4 py-1.5 rounded-full shadow-sm transition-all duration-200 border ${orderType === type
+                        ? 'text-[#f97316] bg-[#fff7ed] border-[#fdba74]/50 scale-105'
+                        : 'text-gray-500 bg-white border-gray-200 hover:bg-gray-50'
+                        }`}
                     >
                       {type}
                     </button>
@@ -1540,7 +1557,7 @@ const CreateQuotePage = () => {
                 <div>
                   <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box Type <span className="text-red-500">*</span></label>
                   <div className="relative">
-                    <select 
+                    <select
                       value={boxType}
                       onChange={(e) => { setBoxType(e.target.value); if (errors.boxType) setErrors({ ...errors, boxType: null }); }}
                       className={`w-full border ${errors.boxType ? 'border-red-500' : 'border-gray-200'} rounded-md px-3 py-2 text-[13px] text-[#1a233a] focus:outline-none focus:border-blue-500 bg-white shadow-sm appearance-none`}
@@ -1700,31 +1717,31 @@ const CreateQuotePage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Board Size (L x W)</label>
-                  <input type="text" value={boardSize} readOnly className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF (Bursting Factor)</label>
-                  <div className="relative">
-                    <input type="text" value={boardFactor} readOnly className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm pr-12" />
-                    <span className="absolute right-3 top-2.5 text-[11px] text-gray-400 font-medium">kg/cm²</span>
+                    <input type="text" value={boardSize} readOnly className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Number of Top Paper</label>
-                  <input type="text" value={numberOfPaper} onChange={(e) => setNumberOfPaper(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Number of Two Ply</label>
-                  <input type="text" value={numberOfTwoPly} onChange={(e) => setNumberOfTwoPly(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box Weight (Per Box)</label>
-                  <input type="text" value={boxWeight} onChange={(e) => setBoxWeight(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Total Weight (Order)</label>
-                  <input type="text" value={totalWeight} onChange={(e) => setTotalWeight(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
-                </div>
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">BF (Bursting Factor)</label>
+                    <div className="relative">
+                      <input type="text" value={boardFactor} readOnly className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm pr-12" />
+                      <span className="absolute right-3 top-2.5 text-[11px] text-gray-400 font-medium">kg/cm²</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Number of Top Paper</label>
+                    <input type="text" value={numberOfPaper} onChange={(e) => setNumberOfPaper(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Number of Two Ply</label>
+                    <input type="text" value={numberOfTwoPly} onChange={(e) => setNumberOfTwoPly(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Box Weight (Per Box)</label>
+                    <input type="text" value={boxWeight} onChange={(e) => setBoxWeight(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1a233a] mb-2">Total Weight (Order)</label>
+                    <input type="text" value={totalWeight} onChange={(e) => setTotalWeight(e.target.value)} className="w-full border border-gray-200 rounded-md px-3 py-2 text-[13px] font-bold text-[#1a233a] focus:outline-none focus:border-blue-500 bg-blue-50/30 shadow-sm" />
+                  </div>
                 </div>
               </div>
 
@@ -2019,9 +2036,8 @@ const CreateQuotePage = () => {
                       <div key={index} className="border border-gray-100 rounded-xl p-4 bg-[#fafbfc]">
                         <div className="flex items-center justify-between mb-4">
                           <h5 className="text-[14px] font-bold text-[#1a233a]">{mat.itemName || mat.itemCode}</h5>
-                          <span className={`px-2 py-1 rounded text-[11px] font-bold ${
-                            mat.indicator === 'Green' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#fee2e2] text-[#991b1b]'
-                          }`}>
+                          <span className={`px-2 py-1 rounded text-[11px] font-bold ${mat.indicator === 'Green' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#fee2e2] text-[#991b1b]'
+                            }`}>
                             {mat.indicator === 'Green' ? 'Available' : 'Shortage'}
                           </span>
                         </div>
@@ -2095,7 +2111,7 @@ const CreateQuotePage = () => {
         </div>
       )}
 
-      </main>
+    </main>
   );
 };
 
